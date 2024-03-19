@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "14435543950",
+    "project_id": "timestory-db69c",
+    "storage_bucket": "timestory-db69c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:14435543950:android:91b091a11d83d800d1d2df",
+        "android_client_info": {
+          "package_name": "com.example.timestory"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDAzMhxY-5IOIRj2F3SiLAlnVeRV8qfeU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
