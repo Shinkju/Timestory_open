@@ -38,7 +38,7 @@ class _JoinScreenState extends State<JoinScreen>{
           password: passwordController.text.trim(),
         );
 
-        Fluttertoast.showToast(msg: "회원가입이 완료되었습니다. 로그인을 진행해주세요.");
+        Fluttertoast.showToast(msg: "회원가입이 완료되었습니다.\n로그인을 진행해주세요.");
 
         Navigator.pushReplacement(
           context, 
@@ -83,11 +83,21 @@ class _JoinScreenState extends State<JoinScreen>{
                   ),
                 ),
                 Container(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+                  child: const Text(
+                    "Sign-In",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontFamily: 'Lato'
+                    ),
+                  ),
+                ),
+                Container(
                   margin: const EdgeInsets.all(5),
                   child: TextField(
                     controller: emailController,
                     decoration: const InputDecoration(
-                      border: OutlineInputBorder(), label: Text("timestory@email.com"),
+                      border: OutlineInputBorder(), label: Text("timestory@email.com", style: TextStyle(color: Colors.grey),),
                     ),
                   ),
                 ),
@@ -97,7 +107,7 @@ class _JoinScreenState extends State<JoinScreen>{
                     controller: passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(
-                      border: OutlineInputBorder(), label: Text("********"),
+                      border: OutlineInputBorder(), label: Text("********", style: TextStyle(color: Colors.grey),),
                     ),
                   ),
                 ),

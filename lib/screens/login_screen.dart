@@ -65,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen>{
     if(errorMsg.isNotEmpty){
       Fluttertoast.showToast(
         msg: errorMsg,
+        gravity: ToastGravity.TOP, //위치
         backgroundColor: Colors.white,
         fontSize: 20,
         toastLength: Toast.LENGTH_SHORT,  //AOS
@@ -94,15 +95,16 @@ class _LoginScreenState extends State<LoginScreen>{
         });
       } on FirebaseAuthException catch (e){
         if(e.code == 'user-not-found'){
-          errorMsg = "사용자가 존재하지 않습니다.";
+          errorMsg = '사용자가 존재하지 않습니다.';
         }else if(e.code == 'wrong-password'){
-          errorMsg = "비밀번호가 일치하지 않습니다.";
+          errorMsg = '비밀번호가 일치하지 않습니다.';
         }else if(e.code == 'invalid-email'){
-          errorMsg = "이메일이 일치하지 않습니다.";
+          errorMsg = '이메일이 일치하지 않습니다.';
         }
 
         Fluttertoast.showToast(
           msg: errorMsg,
+          gravity: ToastGravity.TOP, //위치
           backgroundColor: Colors.white,
           fontSize: 20,
           toastLength: Toast.LENGTH_SHORT,  //AOS
@@ -152,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen>{
                   child: TextField(
                     controller: emailController,
                     decoration: const InputDecoration(
-                      border: OutlineInputBorder(), label: Text("timestory@email.com"),
+                      border: OutlineInputBorder(), label: Text("timestory@email.com", style: TextStyle(color: Colors.grey),),
                     ),
                   ),
                 ),
@@ -162,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen>{
                     controller: passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(
-                      border: OutlineInputBorder(), label: Text("********"),
+                      border: OutlineInputBorder(), label: Text("********", style: TextStyle(color: Colors.grey),),
                     ),
                   ),
                 ),
@@ -228,6 +230,7 @@ class _LoginScreenState extends State<LoginScreen>{
                   margin: const EdgeInsets.all(10),
                   child: SignInButton(
                     Buttons.Google,
+                    //shape: const CircleBorder(),
                     onPressed: () async{
                       //google signin
                       GoogleSignIn _googleSignIn = GoogleSignIn();
