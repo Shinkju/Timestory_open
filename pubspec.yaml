@@ -34,16 +34,19 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.6
-  firebase_core: ^2.27.1
-  firebase_auth: ^4.17.9
-  fluttertoast: ^8.2.4
-  url_launcher: ^6.2.5
-  shared_preferences: ^2.2.2
-  table_calendar: ^3.1.0
+  cupertino_icons: ^1.0.6               # iOS style 날짜 토굴
+  firebase_core: ^2.27.1                # Firebase Plugin
+  firebase_auth: ^4.17.9                # Firebase 인증
+  fluttertoast: ^8.2.4                  # 앱내 임시 알림
+  url_launcher: ^6.2.5                  # URL 실행, 전화통화, 이메일, SMS
+  shared_preferences: ^2.2.2            # key-value 영구저장(기기)
+  table_calendar: ^3.1.0                # 달력
   google_sign_in: ^6.2.1
   flutter_signin_button: ^2.0.0
-  intl: ^0.19.0
+  intl: ^0.19.0                         # 다국어
+  sign_in_with_apple: ^6.0.0
+  crypto: ^3.0.3                        # 암호화/복호화
+  logger: ^2.1.0
 
 dev_dependencies:
   flutter_test:

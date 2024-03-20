@@ -58,10 +58,12 @@ class _LoginScreenState extends State<LoginScreen>{
   void _fireAuthSignIn(){
     if(emailController.text.isEmpty){
       errorMsg = "이메일을 입력하세요.";
-    }else if(passwordController.text.isEmpty){
+    } 
+    if(passwordController.text.isEmpty){
       errorMsg = "비밀번호를 입력하세요.";
     }
 
+    print("email : ${emailController.text} , password : ${passwordController.text}");
     if(errorMsg.isNotEmpty){
       Fluttertoast.showToast(
         msg: errorMsg,
@@ -153,8 +155,9 @@ class _LoginScreenState extends State<LoginScreen>{
                   margin: const EdgeInsets.all(5),
                   child: TextField(
                     controller: emailController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(), label: Text("timestory@email.com", style: TextStyle(color: Colors.grey),),
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(), 
+                      label: emailController.text.isEmpty ? const Text("timestory@email.com", style: TextStyle(color: Colors.grey)) : null,
                     ),
                   ),
                 ),
@@ -225,7 +228,8 @@ class _LoginScreenState extends State<LoginScreen>{
                     );
                   },
                 ),
-                const SizedBox(height: 50.0,),
+                /* apple auth가 없으면 ios는 출시가 불가하므로 google auth는 일단 보류 */
+                /*const SizedBox(height: 50.0,),
                 Container(
                   margin: const EdgeInsets.all(10),
                   child: SignInButton(
@@ -237,7 +241,18 @@ class _LoginScreenState extends State<LoginScreen>{
                       GoogleSignInAccount? _account = await _googleSignIn.signIn();
                     },
                   ),
-                ),
+                ),*/
+                /* IOS에서만 사용할 수 있도록 설정 */
+                /*const SizedBox(height: 30.0,),
+                Container(
+                  margin: const EdgeInsets.all(10),
+                  child: SignInButton(
+                    Buttons.Apple,
+                    onPressed: () async{
+                      //apple signin - only info => 이름(실명보장x), 이메일(선택)
+                    },
+                  ),
+                ),*/
               ],
             ),
           ),
