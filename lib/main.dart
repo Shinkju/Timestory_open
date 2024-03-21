@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:timestory/firebase_options.dart';
 import 'package:timestory/screens/calendar_screen.dart';
 import 'package:timestory/screens/login_screen.dart';
+import 'package:timestory/screens/splash_screen.dart';
 
 Future<void> main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +31,7 @@ class App extends StatelessWidget{
           PointerDeviceKind.unknown,
         },
       ),
-      home: const Root(),
+      home: const SplashScreen(),
     );
   }
 }
