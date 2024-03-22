@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -10,11 +11,11 @@ class ScheduleBottomSheet extends StatefulWidget{
   final String year, month, day;
 
   const ScheduleBottomSheet({
+    super.key,
     required this.year,
     required this.month,
     required this.day,    
-    Key? key,
-  }):super(key: key);
+  });
 
   @override
   State<ScheduleBottomSheet> createState() => _ScheduleBottomSheetState();
@@ -24,58 +25,29 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
   late SharedPreferences prefs;
   String _content = '';
 
-  //저장소 관리
-  Future initPrefs() async{
-    prefs = await SharedPreferences.getInstance();
-    final scheduleInfo = prefs.getStringList('scheduleInfo');
-    //사용자가 아직 등록한 일정이 1개도 없을 경우
-    if(scheduleInfo == null){
-      await prefs.setStringList('scheduleInfo', []);
-    }
-  }
-
   @override
   void initState(){
     super.initState();
-    initPrefs();
+    //initPrefs();
   }
-
-  //일정을 구분하기 위한 고유키
-  String _formatDateTime(DateTime dateTime){
-    return "${dateTime.year}${dateTime.month}${dateTime.day}${dateTime.hour}${dateTime.minute}${dateTime.second}";
-  }
-
   //Safe
   void onSaveProssed() async {
-    await initPrefs();
-
-    print("SAVED!");
-
     if(_content.isNotEmpty){
-      final key = _formatDateTime(DateTime.now()); //고유키 생성
-      final schedule = {
-        'year': widget.year,
-        'month': widget.month,
-        'day': widget.day,
-        'content': _content,
-      };
-      final scheduleInfo = prefs.getStringList('scheduleInfo') ?? []; //없으면 빈배열 생성
-      scheduleInfo.add(key);
-      prefs.setStringList(key, scheduleInfo);
-
-      //일정 저장
-      await prefs.setStringList(key, [
-        schedule['year'].toString(),
-        schedule['month'].toString(),
-        schedule['day'].toString(),
-        schedule['content'].toString(),
-      ]);
+      List<MyData> dataList = [
+        MyData(year: widget.year, month: widget.month, day: widget.day, content: _content)
+      ];
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      Map<String, dynamic> dataMap = {};
+      for (var data in dataList) {
+        dataMap['${data.year}${data.month.toString().padLeft(2, '0')}${data.day.toString().padLeft(2, '0')}'] = data.toJson();
+      }
 
       Fluttertoast.showToast(msg: "일정이 추가되었습니다.");
       Navigator.pushReplacement(
         context, 
-        MaterialPageRoute(builder: (context) => const CalendarSreen()),
+        MaterialPageRoute(builder: (context) => const CalendarScreen()),
       );
+      await prefs.setString('scheduleInfo', jsonEncode(dataMap));
     }else{
       Fluttertoast.showToast(msg: "내용을 입력하세요");
     }
@@ -87,7 +59,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
 
     return SafeArea(
       child: Container(
-        height: MediaQuery.of(context).size.height / 2 + bottomInsert,  //화면 반 높이 키보드
+        height: MediaQuery.of(context).size.height *(3/4),
         color: Colors.white,
         child: Padding(
           padding: EdgeInsets.only(
@@ -99,28 +71,37 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
           child: Column(
             children: [
               Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: DEFAULT_COLOR),
-                  borderRadius: BorderRadius.circular(10),
-                ),
                 child: Text(
                   "${widget.year}년 ${widget.month}월 ${widget.day}일",
                   style: const TextStyle(
                     backgroundColor: Colors.white,
                     fontFamily: "Lato",
                     color: DEFAULT_COLOR,
+                    fontSize: 25,
                   ),
                 ),
               ),
               const SizedBox(height: 8.0,),
               Expanded(
-                child: CustomTextField(
-                  label: '내용',
-                  onChanged: (value) {
-                    setState(() {
-                      _content = value;
-                    });
-                  },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: DEFAULT_COLOR, width: 2.0,),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: TextField(
+                    onChanged: (value) {
+                      setState(() {
+                        _content = value;
+                      });
+                    },
+                    maxLines: null,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: '내용',
+                    ),
+                  ),
                 ),
               ),
               SizedBox(
@@ -148,10 +129,10 @@ class CustomTextField extends StatefulWidget{
   final ValueChanged<String> onChanged;
 
   const CustomTextField({
-    Key? key,
+    super.key,
     required this.label,
     required this.onChanged,
-  }):super(key: key);
+  });
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -197,5 +178,38 @@ class _CustomTextFieldState extends State<CustomTextField> {
   void dispose(){
     _controller.dispose();
     super.dispose();
+  }
+}
+
+//데이터 저장
+class MyData{
+  String year;
+  String month;
+  String day;
+  String content;
+
+  MyData({
+    required this.year,
+    required this.month,
+    required this.day,
+    required this.content,
+  });
+
+  Map<String, dynamic> toJson(){
+    return {
+      'year': year,
+      'month': month,
+      'day': day,
+      'content': content,
+    };
+  }
+
+  factory MyData.fromJson(Map<String, dynamic> json){
+    return MyData(
+      year: json['year'], 
+      month: json['month'], 
+      day: json['day'],
+      content: json['content'],
+    );
   }
 }

@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_signin_button/flutter_signin_button.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:timestory/screens/calendar_screen.dart';
@@ -19,11 +18,13 @@ class _LoginScreenState extends State<LoginScreen>{
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
+  final storage = const FlutterSecureStorage();
+
   //이메일기억 저장소관리
   late SharedPreferences prefs;
   bool isChecked = false;
   bool isLoading = false;
-  String errorMsg = "";
+  String? errorMsg;
 
   @override //초기화
   void initState(){
@@ -51,7 +52,11 @@ class _LoginScreenState extends State<LoginScreen>{
     if(isChecked){
       await prefs.setString('checkEmail', emailController.text);
     }else{
-      await prefs.remove('checkEmail');
+      //체크박스를 해제한 경우에는 기존 데이터도 삭제
+      final checkEmail = prefs.getString('checkEmail');
+      if(checkEmail != null){
+        await prefs.remove('checkEmail');
+      }
     }
   }
 
@@ -63,10 +68,9 @@ class _LoginScreenState extends State<LoginScreen>{
       errorMsg = "비밀번호를 입력하세요.";
     }
 
-    print("email : ${emailController.text} , password : ${passwordController.text}");
-    if(errorMsg.isNotEmpty){
+    if(errorMsg != null){
       Fluttertoast.showToast(
-        msg: errorMsg,
+        msg: errorMsg.toString(),
         gravity: ToastGravity.TOP, //위치
         backgroundColor: Colors.white,
         fontSize: 20,
@@ -82,20 +86,28 @@ class _LoginScreenState extends State<LoginScreen>{
     if(_formKey.currentState!.validate()){ //키보드 숨기기
       FocusScope.of(context).requestFocus(FocusNode());
 
+      setState(() {
+        isLoading = true;
+      });
+
       try{
         await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: email, 
           password: password
-        ).then((value){
-          setState(() {
+        );
+
+        //보안 스토리지 저장
+        await storage.write(key: 'email', value: email);
+        await storage.write(key: 'password', value: password);
+
+        setState(() {
             isLoading = false;
             Navigator.pushReplacement(
               context, 
-              MaterialPageRoute(builder: (context) => const CalendarSreen()),
+              MaterialPageRoute(builder: (context) => const CalendarScreen()),
             );
-          });
         });
-      } on FirebaseAuthException catch (e){
+      } on FirebaseAuthException catch(e){
         if(e.code == 'user-not-found'){
           errorMsg = '사용자가 존재하지 않습니다.';
         }else if(e.code == 'wrong-password'){
@@ -104,14 +116,20 @@ class _LoginScreenState extends State<LoginScreen>{
           errorMsg = '이메일이 일치하지 않습니다.';
         }
 
-        Fluttertoast.showToast(
-          msg: errorMsg,
+        if(errorMsg != null){
+          Fluttertoast.showToast(
+          msg: errorMsg.toString(),
           gravity: ToastGravity.TOP, //위치
           backgroundColor: Colors.white,
           fontSize: 20,
           toastLength: Toast.LENGTH_SHORT,  //AOS
           timeInSecForIosWeb: 1,  //IOS
         );
+        }
+      }finally{
+        setState(() {
+          isLoading = false;
+        });
       }
     }
   }
@@ -228,31 +246,6 @@ class _LoginScreenState extends State<LoginScreen>{
                     );
                   },
                 ),
-                /* apple auth가 없으면 ios는 출시가 불가하므로 google auth는 일단 보류 */
-                /*const SizedBox(height: 50.0,),
-                Container(
-                  margin: const EdgeInsets.all(10),
-                  child: SignInButton(
-                    Buttons.Google,
-                    //shape: const CircleBorder(),
-                    onPressed: () async{
-                      //google signin
-                      GoogleSignIn _googleSignIn = GoogleSignIn();
-                      GoogleSignInAccount? _account = await _googleSignIn.signIn();
-                    },
-                  ),
-                ),*/
-                /* IOS에서만 사용할 수 있도록 설정 */
-                /*const SizedBox(height: 30.0,),
-                Container(
-                  margin: const EdgeInsets.all(10),
-                  child: SignInButton(
-                    Buttons.Apple,
-                    onPressed: () async{
-                      //apple signin - only info => 이름(실명보장x), 이메일(선택)
-                    },
-                  ),
-                ),*/
               ],
             ),
           ),
