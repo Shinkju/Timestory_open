@@ -30,7 +30,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
     super.initState();
     //initPrefs();
   }
-  //Safe
+  //Save
   void onSaveProssed() async {
     if(_content.isNotEmpty){
       List<MyData> dataList = [
@@ -43,10 +43,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
       }
 
       Fluttertoast.showToast(msg: "일정이 추가되었습니다.");
-      Navigator.pushReplacement(
-        context, 
-        MaterialPageRoute(builder: (context) => const CalendarScreen()),
-      );
+      Navigator.pop(context); // 바텀 시트를 닫음
       await prefs.setString('scheduleInfo', jsonEncode(dataMap));
     }else{
       Fluttertoast.showToast(msg: "내용을 입력하세요");

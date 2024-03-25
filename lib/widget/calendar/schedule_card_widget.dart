@@ -45,10 +45,8 @@ class _ScheduleCardState extends State<ScheduleCard> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           final scheduleKeys = snapshot.data!;
-          return ListView.builder(
-            itemCount: scheduleKeys.length,
-            itemBuilder: (context, index) {
-              final key = scheduleKeys[index];
+          return Column(
+            children: scheduleKeys.map((key) {
               final scheduleData = prefs.getStringList(key);
               if (scheduleData != null) {
                 final Map<String, dynamic> data = jsonDecode(scheduleData[0]);
@@ -59,7 +57,7 @@ class _ScheduleCardState extends State<ScheduleCard> {
               } else {
                 return const SizedBox(); //데이터가 올바르게 저장되지 않았을 경우 빈 위젯
               }
-            },
+            }).toList(),
           );
         } else {
           return const SizedBox(); //데이터가 없을 경우 빈 위젯

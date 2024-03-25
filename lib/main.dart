@@ -1,22 +1,15 @@
 import 'dart:ui';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:timestory/firebase_options.dart';
 import 'package:timestory/screens/calendar_screen.dart';
-import 'package:timestory/screens/login_screen.dart';
-import 'package:timestory/screens/splash_screen.dart';
 import 'package:timestory/screens/days_screen.dart';
-Future<void> main() async{
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+import 'package:timestory/screens/splash_screen.dart';
+void main() {
   runApp(const App());
 }
 
-class App extends StatelessWidget{
+class App extends StatelessWidget {
   const App({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -30,13 +23,58 @@ class App extends StatelessWidget{
           PointerDeviceKind.unknown,
         },
       ),
-      initialRoute: '/splash', //첫화면
-      routes: {
-        '/splash' : (context) => const SplashScreen(),
-        '/' : (context) => const CalendarScreen(),
-        '/days' : (context) => const TheDayBeforeScreen(),
-        'login' : (context) => const LoginScreen(),
-      },
+      home: const SplashScreen(),
+    );
+  }
+}
+
+class Root extends StatefulWidget{
+  const Root({super.key});
+
+  @override
+  State<Root> createState() => _RootState();
+}
+
+class _RootState extends State<Root> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _pages = const [
+    CalendarScreen(),
+    TheDayBeforeScreen(),
+  ];
+
+  void _onItemTapped(int index){
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.grey,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        enableFeedback: false,
+        iconSize: 30.0,
+        onTap: _onItemTapped,
+        currentIndex: _selectedIndex,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month_outlined),
+            label: 'Calendar',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.density_medium_sharp),
+            label: 'D-day',
+          ),
+        ],
+      ),
     );
   }
 }
@@ -50,4 +88,13 @@ class App extends StatelessWidget{
 
   StatelessWidget : 상태를 가지지않고, 한번 그려진 후 변경되지 않는다.
   - 주로 정적인 부분이나, 상태가 변하지 않는 UI를 표현할 때 쓴다.
+ */
+
+
+/* 
+1. 로그인/회원가입 제거
+2. 하단 네비게이터 적용
+3. 로딩페이지 적용 1.6초
+4. 캘린더에 일정 저장 테스트 전
+5. dday 페이지 작업 진행 중
  */

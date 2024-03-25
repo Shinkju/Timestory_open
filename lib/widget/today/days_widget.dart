@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 import 'package:timestory/styles/colors.dart';
 import 'package:timestory/widget/today/days_sheet_widget.dart';
 
@@ -33,31 +34,35 @@ class _TheDaysCardState extends State<TheDaysCard>{
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       body: ListView.builder(
         itemCount: ddayList.length,
         itemBuilder: (context, index){
+          DateTime ddayDate = DateTime.parse(ddayList[index]['ddayDate']);
+          final Duration duration = ddayDate.difference(DateTime.now());
+          final int daysLeft = duration.inDays;
+
           return ListTile(
             title: Text(ddayList[index]['title']),
-            subtitle: Text('D-Day: ${ddayList[index]['ddayDate']}'),
+            subtitle: Text(
+              'D-Day: ${DateFormat('yyyy-MM-dd').format(ddayDate)} (${daysLeft < 0 ? 'D+${daysLeft.abs()}' : 'D-${daysLeft.abs()}'} dats)'
+            ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: DEFAULT_COLOR,
+          backgroundColor: DEFAULT_COLOR,
           onPressed: (){
             showModalBottomSheet(
               context: context,
-              isDismissible: true,
+              isDismissible: true, 
               builder: (_) => const DDayBottomSheet(),
               isScrollControlled: true, //키보드가림 해결
             );
           },
-          child: const Icon(Icons.add,),
-      ),
+          child: const Icon(Icons.add),
+        ),
     );
   }
 }
-
-/* 필요인자 : 설정날짜, 제목, 디데이 or 날짜수, 아이콘이름  */
