@@ -1,11 +1,10 @@
 import 'dart:convert';
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timestory/screens/calendar_screen.dart';
-import 'package:timestory/styles/colors.dart';
+import 'package:timestory/common/common.dart';
+import 'package:timestory/common/colors.dart';
+import 'package:timestory/model/schedule_memo_model.dart';
 
 class ScheduleBottomSheet extends StatefulWidget{
   final String year, month, day;
@@ -30,21 +29,24 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
     super.initState();
     //initPrefs();
   }
+
   //Save
   void onSaveProssed() async {
     if(_content.isNotEmpty){
-      List<MyData> dataList = [
-        MyData(year: widget.year, month: widget.month, day: widget.day, content: _content)
+      List<ScheduleMemoModel> dataList = [
+        ScheduleMemoModel(
+          year: widget.year,
+          month: widget.month,
+          day: widget.day,
+          uuid: Common.getUuid(),
+          content: _content,
+        )
       ];
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      Map<String, dynamic> dataMap = {};
-      for (var data in dataList) {
-        dataMap['${data.year}${data.month.toString().padLeft(2, '0')}${data.day.toString().padLeft(2, '0')}'] = data.toJson();
-      }
+      await prefs.setStringList('scheduleInfo', dataList.map((map) => jsonEncode(map.schduleToJson())).toList());  //toJson으로 변환후 저장
 
       Fluttertoast.showToast(msg: "일정이 추가되었습니다.");
-      Navigator.pop(context); // 바텀 시트를 닫음
-      await prefs.setString('scheduleInfo', jsonEncode(dataMap));
+      Navigator.pop(context); // 바텀시트 닫기
     }else{
       Fluttertoast.showToast(msg: "내용을 입력하세요");
     }
@@ -120,7 +122,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
   }
 }
 
-//필드
+//실제 입력 필드
 class CustomTextField extends StatefulWidget{
   final String label;
   final ValueChanged<String> onChanged;
@@ -175,38 +177,5 @@ class _CustomTextFieldState extends State<CustomTextField> {
   void dispose(){
     _controller.dispose();
     super.dispose();
-  }
-}
-
-//데이터 저장
-class MyData{
-  String year;
-  String month;
-  String day;
-  String content;
-
-  MyData({
-    required this.year,
-    required this.month,
-    required this.day,
-    required this.content,
-  });
-
-  Map<String, dynamic> toJson(){
-    return {
-      'year': year,
-      'month': month,
-      'day': day,
-      'content': content,
-    };
-  }
-
-  factory MyData.fromJson(Map<String, dynamic> json){
-    return MyData(
-      year: json['year'], 
-      month: json['month'], 
-      day: json['day'],
-      content: json['content'],
-    );
   }
 }

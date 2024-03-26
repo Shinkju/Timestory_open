@@ -3,7 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:timestory/widget/calendar/schedule_card_widget.dart';
-import 'package:timestory/styles/colors.dart';
+import 'package:timestory/common/colors.dart';
 import 'package:timestory/widget/calendar/schedule_sheet_widget.dart';
 import 'package:timestory/widget/today/daybar_widget.dart';
 
@@ -25,11 +25,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   );
 
   void onDaySelected(DateTime selectedDate, DateTime focusedDate){
-    if(this.selectedDate != focusedDate){
-      setState(() {
+    setState(() {
       this.selectedDate = focusedDate;
     });
-    }
   }
   
   @override
@@ -124,13 +122,13 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             ),
           ),
           const SizedBox(height: 8,),
-          //선택일정 + 개수 배너
+
           TodayBanner(
             selectedDate: selectedDate, 
             count: 0
           ),
           const SizedBox(height: 8,),
-          //일정카드
+
           ScheduleCard(
             year: selectedDate.year.toString(), 
             month: selectedDate.month.toString(), 

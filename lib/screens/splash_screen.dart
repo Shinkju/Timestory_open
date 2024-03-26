@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:timestory/main.dart';
-import 'package:timestory/styles/colors.dart';
+import 'package:timestory/common/colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

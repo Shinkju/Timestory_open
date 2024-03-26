@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-import 'package:timestory/styles/colors.dart';
+import 'package:timestory/common/colors.dart';
 import 'package:timestory/widget/today/days_sheet_widget.dart';
 
 class TheDaysCard extends StatefulWidget{

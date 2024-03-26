@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DDayBottomSheet extends StatefulWidget{
-  const DDayBottomSheet({Key? key}) : super(key: key);
+  const DDayBottomSheet({super.key});
   
   @override
   State<StatefulWidget> createState() => _DDayBottomSheetState();
