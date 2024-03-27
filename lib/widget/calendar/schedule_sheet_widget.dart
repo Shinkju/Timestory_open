@@ -27,7 +27,11 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
   @override
   void initState(){
     super.initState();
-    //initPrefs();
+    initPrefs();
+  }
+
+  void initPrefs() async {
+    prefs = await SharedPreferences.getInstance();
   }
 
   //Save
@@ -44,6 +48,9 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
       ];
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setStringList('scheduleInfo', dataList.map((map) => jsonEncode(map.schduleToJson())).toList());  //toJson으로 변환후 저장
+
+      final List<String>? test = prefs.getStringList('scheduleInfo');
+      print('올바르게 저장됐는지 : $test');
 
       Fluttertoast.showToast(msg: "일정이 추가되었습니다.");
       Navigator.pop(context); // 바텀시트 닫기

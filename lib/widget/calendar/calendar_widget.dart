@@ -130,6 +130,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           const SizedBox(height: 8,),
 
           ScheduleCard(
+            key: UniqueKey(), //계속 바뀐값을 전달하기 위해 사용
             year: selectedDate.year.toString(), 
             month: selectedDate.month.toString(), 
             day: selectedDate.day.toString(), 

@@ -30,73 +30,64 @@ class _ScheduleCardState extends State<ScheduleCard> {
   
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            FutureBuilder(
-              future: memos,
-              builder: (context, snapshot){
-                if(snapshot.hasData){
-                  return Column(
-                    children: [
-                      for(var memo in snapshot.data!)
-                        Memo(
-                          memoInfo: memo,
-                        ),
-                    ],
-                  );
-                }
-                return Container(); //데이터가 없는경우
-              },
-            ),
-          ],
-        ),
-      ),
+    return FutureBuilder<List<ScheduleMemoModel>>(
+      future: memos,
+      builder: (context, snapshot){
+        if(snapshot.hasData){
+          return Column(
+            children: [
+              for(var memo in snapshot.data!)
+                Memo(
+                  memoInfo: memo,
+                  uuid: memo.uuid,
+                ),
+            ],
+          );
+        }
+        return Container(); //데이터가 없는경우
+      },
     );
   }
 }
 
 //내용 보여주는 위젯
-class Memo extends StatefulWidget{
+class Memo extends StatefulWidget {
   final ScheduleMemoModel memoInfo;
-  
+  final String uuid;
+
   const Memo({
     super.key,
     required this.memoInfo,
+    required this.uuid,
   });
-  
+
   @override
   State<Memo> createState() => _MemoState();
 }
 
-class _MemoState extends State<Memo>{
-  late SharedPreferences prefs;
-
+class _MemoState extends State<Memo> {
+  //prefs받아오기
   @override
   void initState(){
     super.initState();
   }
   @override
-  void didChangeDependencies(){ //의존하는 객체가 변경되었을 때 실행
+  void didChangeDependencies(){
     super.didChangeDependencies();
   }
 
-  //클릭 시 수정페이지 이동
-  onButtonTap() async{
-
-  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onButtonTap, //수정 페이지로 이동
+      onTap: onButtonTap, // 수정 페이지로 이동
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
+        margin: const EdgeInsets.all(3.0),
+        clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20.0),
-          color: DEFAULT_COLOR,
+          borderRadius: BorderRadius.circular(10.0),
+          border: Border.all(color: DEFAULT_COLOR),
+          color: Colors.white,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
@@ -106,7 +97,7 @@ class _MemoState extends State<Memo>{
               Text(
                 widget.memoInfo.content,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: DEFAULT_COLOR,
                   fontSize: 13,
                   fontFamily: "Lato",
                 ),
@@ -121,4 +112,7 @@ class _MemoState extends State<Memo>{
       ),
     );
   }
+
+  // 클릭 시 수정페이지 이동
+  onButtonTap() async {}
 }
