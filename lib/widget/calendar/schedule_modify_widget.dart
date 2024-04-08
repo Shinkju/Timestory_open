@@ -20,12 +20,19 @@ class ScheduleModifySheet extends StatefulWidget{
 
 class _ScheduleModifySheetState extends State<ScheduleModifySheet>{
   late SharedPreferences prefs;
-  String _content = '';
+  late TextEditingController _contentController;
 
   @override
   void initState(){
     super.initState();
+    _contentController = TextEditingController(text: widget.memoInfo.content);
     initPrefs();
+  }
+
+  @override
+  void dispose(){
+    _contentController.dispose();
+    super.dispose();
   }
 
   void initPrefs() async{
@@ -34,6 +41,7 @@ class _ScheduleModifySheetState extends State<ScheduleModifySheet>{
 
   //update
   void onSaveProssed() async{
+    String? _content = _contentController.text;
     if(_content.isNotEmpty){
       SharedPreferences prefs = await SharedPreferences.getInstance();
       List<String>? jsonDataList = prefs.getStringList('scheduleInfo');
@@ -101,15 +109,7 @@ class _ScheduleModifySheetState extends State<ScheduleModifySheet>{
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: TextField(
-                    onChanged: (value){
-                      setState(() {
-                        if(value.isEmpty){
-                          _content = widget.memoInfo.content;
-                        }else{
-                          _content = value;
-                        }
-                      });
-                    },
+                    controller: _contentController,
                     maxLines: null,
                     decoration: const InputDecoration(
                       border: InputBorder.none,
