@@ -47,7 +47,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
         )
       ];
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList('scheduleInfo', dataList.map((map) => jsonEncode(map.schduleToJson())).toList());  //toJson으로 변환후 저장
+      await prefs.setStringList('scheduleInfo', dataList.map((map) => jsonEncode(map.scheduleToJson())).toList());  //toJson으로 변환후 저장
 
       final List<String>? test = prefs.getStringList('scheduleInfo');
       print('올바르게 저장됐는지 : $test');

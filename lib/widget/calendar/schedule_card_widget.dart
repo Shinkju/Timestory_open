@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timestory/model/schedule_memo_model.dart';
 import 'package:timestory/service/schedule_service.dart';
 import 'package:timestory/common/colors.dart';
+import 'package:timestory/widget/calendar/schedule_modify_widget.dart';
+import 'package:timestory/widget/today/daybar_widget.dart';
+import 'package:timestory/widget/today/days_widget.dart';
 
 class ScheduleCard extends StatefulWidget{
   final String year, month, day;
+  final DateTime selectedDate;
 
   const ScheduleCard({
     super.key,
     required this.year,
     required this.month,
     required this.day,
+    required this.selectedDate,
   });
 
   @override
@@ -19,13 +23,24 @@ class ScheduleCard extends StatefulWidget{
 }
 
 class _ScheduleCardState extends State<ScheduleCard> {
-  late SharedPreferences prefs;
   late Future<List<ScheduleMemoModel>> memos;
+  int scheduleCardMemoCount = 0;
 
   @override
   void initState(){
     super.initState();
+    fetchMemos();
+  }
+
+  void fetchMemos(){
     memos = ScheduleService.getScheduleMemosById(widget.year, widget.month, widget.day);
+    memos.then((value){
+      setState(() {
+        scheduleCardMemoCount = value.length;
+      });
+    }).catchError((error){
+      print(error);
+    });
   }
   
   @override
@@ -36,7 +51,12 @@ class _ScheduleCardState extends State<ScheduleCard> {
         if(snapshot.hasData){
           return Column(
             children: [
-              for(var memo in snapshot.data!)
+              TodayBanner(
+                selectedDate: widget.selectedDate, 
+                count: scheduleCardMemoCount,
+              ),
+              const SizedBox(height: 8,),
+              for(var memo in snapshot.data ?? [])
                 Memo(
                   memoInfo: memo,
                   uuid: memo.uuid,
@@ -80,9 +100,19 @@ class _MemoState extends State<Memo> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onButtonTap, // 수정 페이지로 이동
+      // 수정 페이지로 이동
+      onTap: (){
+        showModalBottomSheet(
+          context: context,
+          isDismissible: true,
+          isScrollControlled: true, //키보드가림 해결
+          builder: (_) => ScheduleModifySheet(
+            memoInfo: widget.memoInfo,
+          ),
+        );
+      },
       child: Container(
-        margin: const EdgeInsets.all(3.0),
+        margin: const EdgeInsets.all(5.0),
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10.0),
@@ -98,13 +128,14 @@ class _MemoState extends State<Memo> {
                 widget.memoInfo.content,
                 style: const TextStyle(
                   color: DEFAULT_COLOR,
-                  fontSize: 13,
+                  fontSize: 13.5,
                   fontFamily: "Lato",
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               const Icon(
                 Icons.edit_document,
-                color: Colors.white,
+                color: DEFAULT_COLOR,
               ),
             ],
           ),
@@ -114,5 +145,10 @@ class _MemoState extends State<Memo> {
   }
 
   // 클릭 시 수정페이지 이동
-  onButtonTap() async {}
+  void onButtonTap() async {
+    Navigator.push(
+      context, 
+      MaterialPageRoute(builder: (context) => const TheDaysCard()),
+    );
+  }
 }

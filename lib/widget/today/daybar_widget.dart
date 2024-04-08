@@ -26,7 +26,7 @@ class TodayBanner extends StatelessWidget{
           mainAxisAlignment: MainAxisAlignment.spaceBetween, //양끝 배치
           children: [
             Text(
-              "${selectedDate.year}.${selectedDate.month}.${selectedDate.day}",
+              "${selectedDate.year}년 ${selectedDate.month}월 ${selectedDate.day}일",
               style: textStyle,
             ),
             Text(

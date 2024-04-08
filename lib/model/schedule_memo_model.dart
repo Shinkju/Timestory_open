@@ -19,7 +19,7 @@ class ScheduleMemoModel{
     );
   }
 
-  Map<String,dynamic> schduleToJson(){
+  Map<String,dynamic> scheduleToJson(){
     return{
       'year': year,
       'month': month,

@@ -5,7 +5,6 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:timestory/widget/calendar/schedule_card_widget.dart';
 import 'package:timestory/common/colors.dart';
 import 'package:timestory/widget/calendar/schedule_sheet_widget.dart';
-import 'package:timestory/widget/today/daybar_widget.dart';
 
 class CalendarWidget extends StatefulWidget{
   const CalendarWidget({super.key});
@@ -16,6 +15,7 @@ class CalendarWidget extends StatefulWidget{
 
 class _CalendarWidgetState extends State<CalendarWidget> {
   final storage = const FlutterSecureStorage();
+  int scheduleCardMemoCount = 0; //스케줄 메모수
 
   //초기 선택날짜 - 금일
   DateTime selectedDate = DateTime.utc(
@@ -24,9 +24,15 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     DateTime.now().day,
   );
 
-  void onDaySelected(DateTime selectedDate, DateTime focusedDate){
+  void onDaySelected(DateTime selectedDate, DateTime focusedDate) async{ //선택날짜 변경적용
     setState(() {
-      this.selectedDate = focusedDate;
+      this.selectedDate = selectedDate;
+    });
+  }
+
+  void onPageChanged(DateTime focusedDate){ //월(페이지) 변경 적용
+    setState(() {
+      selectedDate = DateTime(focusedDate.year, focusedDate.month, 1);
     });
   }
   
@@ -120,20 +126,15 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 }
               },
             ),
+            onPageChanged: onPageChanged, //월 변경 콜백
           ),
           const SizedBox(height: 8,),
-
-          TodayBanner(
-            selectedDate: selectedDate, 
-            count: 0
-          ),
-          const SizedBox(height: 8,),
-
           ScheduleCard(
             key: UniqueKey(), //계속 바뀐값을 전달하기 위해 사용
             year: selectedDate.year.toString(), 
             month: selectedDate.month.toString(), 
-            day: selectedDate.day.toString(), 
+            day: selectedDate.day.toString(),
+            selectedDate: selectedDate,
           ),
         ],
       ),
