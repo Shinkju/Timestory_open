@@ -3,8 +3,7 @@ import 'package:timestory/model/schedule_memo_model.dart';
 import 'package:timestory/service/schedule_service.dart';
 import 'package:timestory/common/colors.dart';
 import 'package:timestory/widget/calendar/schedule_modify_widget.dart';
-import 'package:timestory/widget/today/daybar_widget.dart';
-import 'package:timestory/widget/today/days_widget.dart';
+import 'package:timestory/widget/calendar/daybar_widget.dart';
 
 class ScheduleCard extends StatefulWidget{
   final String year, month, day;
