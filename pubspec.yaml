@@ -49,6 +49,7 @@ dependencies:
   logger: ^2.1.0
   flutter_secure_storage: ^9.0.0        # 보안 저장소
   uuid: ^4.3.3
+  provider: ^6.1.2
 
 dev_dependencies:
   flutter_test:

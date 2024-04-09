@@ -37,22 +37,33 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
   //Save
   void onSaveProssed() async {
     if(_content.isNotEmpty){
-      List<ScheduleMemoModel> dataList = [
-        ScheduleMemoModel(
-          year: widget.year,
-          month: widget.month,
-          day: widget.day,
-          uuid: Common.getUuid(),
-          content: _content,
-        )
-      ];
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList('scheduleInfo', dataList.map((map) => jsonEncode(map.scheduleToJson())).toList());  //toJson으로 변환후 저장
+      List<String>? existingData = prefs.getStringList('scheduleInfo');
+      List<ScheduleMemoModel> dataList = [];
+
+      //이미데이터가 있다면 불러옴
+      if(existingData != null){
+        dataList = existingData.map((jsonString) => ScheduleMemoModel.fromJson(json.decode(jsonString))).toList();
+      }
+
+      //새로운 데이터 저장
+      dataList.add(ScheduleMemoModel(
+        year: widget.year,
+        month: widget.month,
+        day: widget.day,
+        uuid: Common.getUuid(),
+        content: _content,
+      ));
+      
+      //저장
+      await prefs.setStringList('scheduleInfo', dataList.map((map) => jsonEncode(map.scheduleToJson())).toList());
 
       final List<String>? test = prefs.getStringList('scheduleInfo');
       print('올바르게 저장됐는지 : $test');
 
       Fluttertoast.showToast(msg: "일정이 추가되었습니다.");
+
+      setState(() {}); //화면갱신
       Navigator.pop(context); // 바텀시트 닫기
     }else{
       Fluttertoast.showToast(msg: "내용을 입력하세요");

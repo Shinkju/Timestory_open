@@ -143,12 +143,4 @@ class _MemoState extends State<Memo> {
       ),
     );
   }
-
-  // 클릭 시 수정페이지 이동
-  void onButtonTap() async {
-    Navigator.push(
-      context, 
-      MaterialPageRoute(builder: (context) => const TheDaysCard()),
-    );
-  }
 }

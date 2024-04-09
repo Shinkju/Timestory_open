@@ -31,7 +31,7 @@ class _ScheduleModifySheetState extends State<ScheduleModifySheet>{
 
   @override
   void dispose(){
-    _contentController.dispose();
+    _contentController.dispose(); //컨트롤러 리소스 해제
     super.dispose();
   }
 
@@ -64,10 +64,28 @@ class _ScheduleModifySheetState extends State<ScheduleModifySheet>{
 
         await prefs.setStringList("scheduleInfo", dataList.map((map) => jsonEncode(map.scheduleToJson())).toList());
         Fluttertoast.showToast(msg: "일정이 수정되었습니다.");
+
+        setState(() {}); //화면갱신
         Navigator.pop(context);
-      }else{
-        Fluttertoast.showToast(msg: "내용을 입력하세요.");
       }
+    }else{
+      Fluttertoast.showToast(msg: "내용을 입력하세요.");
+    }
+  }
+
+  //delete
+  void onDeletePressed() async{
+    List<String>? jsonDataList = prefs.getStringList('scheduleInfo');
+
+    if(jsonDataList != null){
+      List<ScheduleMemoModel> dataList = jsonDataList.map((jsonData) => ScheduleMemoModel.fromJson(json.decode(jsonData))).toList();
+      dataList.removeWhere((memo) => memo.uuid == widget.memoInfo.uuid);
+
+      await prefs.setStringList("scheduleInfo", dataList.map((map) => jsonEncode(map.scheduleToJson())).toList());
+      Fluttertoast.showToast(msg: "일정이 삭제되었습니다.");
+
+      setState(() {}); //화면갱신
+      Navigator.pop(context);
     }
   }
 
@@ -117,16 +135,30 @@ class _ScheduleModifySheetState extends State<ScheduleModifySheet>{
                   ),
                 ),
               ),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: onSaveProssed,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: DEFAULT_COLOR,
-                    foregroundColor: Colors.white,
-                  ), 
-                  child: const Text("수정"),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                    onPressed: onDeletePressed,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: DEFAULT_COLOR,
+                      foregroundColor: Colors.white,
+                      //shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                    ), 
+                    child: const Text("삭제"),
+                  ),
+                  const SizedBox(width: 5),
+                  ElevatedButton(
+                    onPressed: onSaveProssed,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: DEFAULT_COLOR,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                    ), 
+                    child: const Text("수정"),
+                  ),
+                ],
               ),
             ],
           ),

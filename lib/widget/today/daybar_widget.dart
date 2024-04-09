@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:timestory/common/colors.dart';
+import 'package:provider/provider.dart';
 
 class TodayBanner extends StatefulWidget{
   final DateTime selectedDate;
@@ -33,7 +34,7 @@ class _TodayBannerState extends State<TodayBanner> {
       color: Colors.white,
     );
 
-    return Container(
+   return Container(
       color: DEFAULT_COLOR,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -41,12 +42,10 @@ class _TodayBannerState extends State<TodayBanner> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween, //양끝 배치
           children: [
             Text(
-              //"${widget.selectedDate.year}년 ${widget.selectedDate.month}월 ${widget.selectedDate.day}일",
               "${_selectedDate.year}년 ${_selectedDate.month}월 ${_selectedDate.day}일",
               style: textStyle,
             ),
             Text(
-              //"${widget.count}개",
               "$_count개",
               style: textStyle,
             ),
@@ -67,5 +66,5 @@ class _TodayBannerState extends State<TodayBanner> {
       });
     }
   }
-  
 }
+
