@@ -69,7 +69,7 @@ class _ScheduleCardState extends State<ScheduleCard> {
   }
 }
 
-//내용 보여주는 위젯
+//내용 위젯
 class Memo extends StatefulWidget {
   final ScheduleMemoModel memoInfo;
   final String uuid;
@@ -85,7 +85,6 @@ class Memo extends StatefulWidget {
 }
 
 class _MemoState extends State<Memo> {
-  //prefs받아오기
   @override
   void initState(){
     super.initState();
@@ -99,8 +98,7 @@ class _MemoState extends State<Memo> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      // 수정 페이지로 이동
-      onTap: (){
+      onTap: (){ //수정페이지
         showModalBottomSheet(
           context: context,
           isDismissible: true,

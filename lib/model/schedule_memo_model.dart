@@ -9,12 +9,6 @@ class ScheduleMemoModel{
     required this.content,
   });
 
-  /* 테스트용 문자열 반환 */
-  @override
-  String toString() {
-    return 'ScheduleMemoModel{year: $year, month: $month, day: $day, uuid: $uuid, content: $content}';
-  }
-
   factory ScheduleMemoModel.fromJson(Map<String, dynamic> json){  //factory: 클래스의 생성자 정의(복잡로직 필요, 캐시된 객체 반환, 객체생성 방법 중 이를 선택하는 로직이 필요)시 사용
     return ScheduleMemoModel(
       year: json['year'],
@@ -33,5 +27,10 @@ class ScheduleMemoModel{
       'uuid': uuid,
       'content': content,
     };
+  }
+
+  @override
+  String toString() {
+    return 'ScheduleMemoModel{year: $year, month: $month, day: $day, uuid: $uuid, content: $content}';
   }
 }

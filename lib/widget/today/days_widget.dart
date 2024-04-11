@@ -1,10 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
 import 'package:timestory/common/colors.dart';
-import 'package:timestory/widget/today/days_sheet_widget.dart';
+import 'package:timestory/widget/today/days_calculator.dart';
+import 'package:timestory/widget/today/days_card_widget.dart';
 
 class TheDaysCard extends StatefulWidget{
   const TheDaysCard({super.key});
@@ -13,9 +12,51 @@ class TheDaysCard extends StatefulWidget{
   State<TheDaysCard> createState() => _TheDaysCardState();
 }
 
-
 class _TheDaysCardState extends State<TheDaysCard>{
-  List<Map<String, dynamic>> ddayList = [];
+  late SharedPreferences prefs;
+
+  @override
+  void initState(){
+    super.initState();
+    initializeDateFormatting('ko_KR', null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          const SizedBox(height: 8.0,),
+          const DaysCard(),
+          GestureDetector(
+            child: const Icon(Icons.add),
+            onTap: (){
+              Navigator.push(
+                context, 
+                MaterialPageRoute(builder: (context) => const DaysCalculator()),
+              );
+            },
+          ),
+        ],
+      ),
+      /*floatingActionButton: FloatingActionButton(
+        backgroundColor: DEFAULT_COLOR,
+        onPressed: (){
+          showModalBottomSheet(
+            context: context,
+            isDismissible: true, 
+            builder: (_) => const DaysCalculator(),
+            isScrollControlled: true, //키보드가림 해결
+          );
+        },
+        child: const Icon(Icons.add),
+      ),*/
+    );
+  }
+}
+
+/*class _TheDaysCardState extends State<TheDaysCard>{
+  //List<Map<String, dynamic>> ddayList = [];
 
   @override
   void initState(){
@@ -65,4 +106,4 @@ class _TheDaysCardState extends State<TheDaysCard>{
         ),
     );
   }
-}
+}*/

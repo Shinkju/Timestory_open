@@ -14,23 +14,24 @@ class CalendarWidget extends StatefulWidget{
 }
 
 class _CalendarWidgetState extends State<CalendarWidget> {
-  final storage = const FlutterSecureStorage();
-  int scheduleCardMemoCount = 0; //스케줄 메모수
+  //final storage = const FlutterSecureStorage();
+  //int scheduleCardMemoCount = 0; //스케줄 메모수
 
-  //초기 선택날짜 - 금일
+  //초기날짜
   DateTime selectedDate = DateTime.utc(
     DateTime.now().year,
     DateTime.now().month,
     DateTime.now().day,
   );
 
-  void onDaySelected(DateTime selectedDate, DateTime focusedDate) async{ //선택날짜 변경적용
+  //선택일 변경
+  void onDaySelected(DateTime selectedDate, DateTime focusedDate) async{
     setState(() {
       this.selectedDate = selectedDate;
     });
   }
 
-  void onPageChanged(DateTime focusedDate){ //월(페이지) 변경 적용
+  void onPageChanged(DateTime focusedDate){ //월 변경
     setState(() {
       selectedDate = DateTime(focusedDate.year, focusedDate.month, 1);
     });
@@ -48,12 +49,12 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       body: Column(
         children: [
           TableCalendar(
-            firstDay: DateTime(2024,1,1), //달력의 시작 날짜
-            lastDay: DateTime(3000,1,1),  //달력의 마지막 날짜
-            focusedDay: selectedDate,   //현재달력 포거스날짜
+            firstDay: DateTime(2024,1,1), //달력 시작날짜
+            lastDay: DateTime(3000,1,1),  //달력 마지막날짜
+            focusedDay: selectedDate,   //현재 포거스날짜
             locale: 'ko_KR',
             daysOfWeekHeight: 30,
-            //날짜가 선택됐을 때
+            //날짜가 선택
             onDaySelected: onDaySelected,
             //선택날짜 분기로직
             selectedDayPredicate: (day) {
@@ -139,17 +140,17 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-          backgroundColor: DEFAULT_COLOR,
-          onPressed: (){
-            showModalBottomSheet(
-              context: context,
-              isDismissible: true,
-              builder: (_) => ScheduleBottomSheet(year: selectedDate.year.toString(), month: selectedDate.month.toString(), day: selectedDate.day.toString()),
-              isScrollControlled: true, //키보드가림 해결
-            );
-          },
-          child: const Icon(Icons.add,),
-        ),
+        backgroundColor: DEFAULT_COLOR,
+        onPressed: (){
+          showModalBottomSheet(
+            context: context,
+            isDismissible: true,
+            builder: (_) => ScheduleBottomSheet(year: selectedDate.year.toString(), month: selectedDate.month.toString(), day: selectedDate.day.toString()),
+            isScrollControlled: true, //키보드가림 해결
+          );
+        },
+        child: const Icon(Icons.add,),
+      ),
     );
   }
 }

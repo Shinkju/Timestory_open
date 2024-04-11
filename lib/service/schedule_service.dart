@@ -5,7 +5,6 @@ import 'package:timestory/model/schedule_memo_model.dart';
 
 class ScheduleService{
 
-  //스케줄일정 목록
   static Future<List<ScheduleMemoModel>> getScheduleMemosById(String year, String month, String day) async{
     final prefs = await SharedPreferences.getInstance();
     final List<String>? scheduleInfo = prefs.getStringList('scheduleInfo');
@@ -25,4 +24,5 @@ class ScheduleService{
     }
     throw Error();
   }
+  
 }
