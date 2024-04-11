@@ -1,16 +1,25 @@
-# timestory
+# Timestory
 
-A new Flutter project.
+"타임스토리"는 시간과 이야기를 결합한 용어입니다.
+달력 앱으로써 시간에 관련된 다양한 이야기와 일정을 기록하고 관리할 수 있음을 의미합니다.
+"시간의 이야기"라는 개념을 담고있어, 사용자들이 달력을 통해 일어난 일들을 기록하고 나만의 이야기를 만들어 나갈 수 있다는 의미가 담겨 있습니다.
 
-## Getting Started
+## Team
+개인 프로젝트
 
-This project is a starting point for a Flutter application.
+## 프로젝트 일정
+2024/03/20 ~ ing
 
-A few resources to get you started if this is your first Flutter project:
+## Skills
+AOS / IOS / Flutter / Dart
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Function
+<h4>Calendar</h4>
+<ul>
+  <li>캘린더의 날짜 클릭 시 해당 날짜에 대한 정보와 등록한 일정 정보 로드 및 일정 개수 로드</li>
+  <li>새로운 일정 등록, 수정, 삭제</li>
+  <li>일정 정보는 모두 사용자의 디바이스를 기준으로 상태 저장</li>
+  <li>ing...</li>
+</ul>
+<br/>
+<h4>D-DAY Widget</h4>
