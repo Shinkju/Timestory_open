@@ -3,14 +3,14 @@ import 'package:timestory/common/colors.dart';
 import 'package:timestory/model/days_info_model.dart';
 import 'package:timestory/service/days_service.dart';
 
-class DaysCard extends StatefulWidget{
-  const DaysCard({super.key});
+class DdayCard extends StatefulWidget{
+  const DdayCard({super.key});
   
   @override
-  State<DaysCard> createState() => _DaysCardState();
+  State<DdayCard> createState() => _DaysCardState();
 }
 
-class _DaysCardState extends State<DaysCard>{
+class _DaysCardState extends State<DdayCard>{
   late Future<List<DaysModel>> days;
   int daysCardCount = 0;
 
@@ -31,20 +31,49 @@ class _DaysCardState extends State<DaysCard>{
   Widget build(BuildContext context) {
     return FutureBuilder<List<DaysModel>>(
       future: days, 
-     builder: (context, snapshot){
+      builder: (context, snapshot){
         if(snapshot.hasData){
-          return Column(
-            children: [
-              const SizedBox(height: 8,),
-              for(var dday in snapshot.data ?? [])
-                Dday(
-                  daysInfo: dday,
-                  uuid: dday.uuid,
+          if(snapshot.data!.isNotEmpty){
+            return Column(
+              children: [
+                const SizedBox(height: 8,),
+                for(var dday in snapshot.data ?? [])
+                  Dday(
+                    daysInfo: dday,
+                    uuid: dday.uuid,
+                  ),
+              ],
+            );
+          }else{
+            return const Center(
+              child: Text(
+                "디데이 일정이 존재하지 않습니다.",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontFamily: "Lato",
+                  fontWeight: FontWeight.bold,
+                  color: DEFAULT_COLOR,
                 ),
-            ],
+              ),
+            );
+          }
+        }else if(snapshot.connectionState == ConnectionState.waiting){
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }else{
+          return const Center(
+            child: Text(
+              "데이터를 불러오는 도중 에러발생",
+              style: TextStyle(
+                fontFamily: "Lato",
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
+              ),
+            ),
           );
         }
-        return Container(); //데이터가 없는경우
       },
     );
   }
@@ -117,10 +146,6 @@ class _DdayState extends State<Dday>{
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(
-                IconData(int.parse(widget.daysInfo.icon), fontFamily: 'MaterialIcons'),
-                size: 24,
-              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

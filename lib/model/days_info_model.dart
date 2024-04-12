@@ -1,12 +1,12 @@
+
 class DaysModel{
-  final String uuid, title, standardDate, calculation, icon;
+  final String uuid, title, standardDate, calculation;
 
   DaysModel({
     required this.uuid,
     required this.title,
     required this.standardDate,
     required this.calculation,
-    required this.icon,
   });
 
   factory DaysModel.fromJson(Map<String, dynamic> json){
@@ -15,7 +15,6 @@ class DaysModel{
       title: json['title'], 
       standardDate: json['standardDate'], 
       calculation: json['calculation'], 
-      icon: json['icon'],
     );
   }
 
@@ -25,12 +24,11 @@ class DaysModel{
       'title': title,
       'standardDate': standardDate,
       'calculation': calculation,
-      'icon': icon,
     };
   }
 
   @override
   String toString(){
-    return 'DaysModel{uuid: $uuid, title: $title, standardDate: $standardDate, calculation: $calculation, icon: $icon}';
+    return 'DaysModel{uuid: $uuid, title: $title, standardDate: $standardDate, calculation: $calculation}';
   }
 }

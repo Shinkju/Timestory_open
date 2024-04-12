@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timestory/model/days_info_model.dart';
 
 class DaysService{
-
   static Future<List<DaysModel>> getDaysInfoByAll() async{
     final prefs = await SharedPreferences.getInstance();
     final List<String>? daysInfo = prefs.getStringList('daysInfo');
@@ -18,8 +17,7 @@ class DaysService{
           daysInstance.add(DaysModel.fromJson(daysMap));
         }
       }
-      return daysInstance;
     }
-    throw Error();
+    return daysInstance;
   }
 }

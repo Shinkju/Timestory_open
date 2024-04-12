@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timestory/common/common.dart';
 import 'package:timestory/model/days_info_model.dart';
+import 'package:timestory/widget/today/days_widget.dart';
 
 class DDayBottomSheet extends StatefulWidget{
   final String calculor;
@@ -22,14 +23,12 @@ class _DDayBottomSheetState extends State<DDayBottomSheet>{
   late SharedPreferences prefs;
   late TextEditingController _titleController;
   late DateTime _selectedDate;
-  IconData? _selectedIcon;
 
   @override
   void initState(){
     super.initState();
     _titleController = TextEditingController();
     _selectedDate = DateTime.now();
-    _selectedIcon = Icons.event;
     initPrefs();
   }
 
@@ -46,7 +45,7 @@ class _DDayBottomSheetState extends State<DDayBottomSheet>{
   //save
   void _saveDDay() async{
     String title = _titleController.text.trim();
-    if(title.isNotEmpty && _selectedIcon != null){
+    if(title.isNotEmpty){
       SharedPreferences prefs = await SharedPreferences.getInstance();
       List<String>? existingData = prefs.getStringList('daysInfo');
       List<DaysModel> dataList = [];
@@ -56,20 +55,14 @@ class _DDayBottomSheetState extends State<DDayBottomSheet>{
         dataList = existingData.map((jsonString) => DaysModel.fromJson(json.decode(jsonString))).toList();
       }
 
-      String? _i_date;
-      if(widget.calculor == '1'){
-        _i_date = DateFormat('yyyy-MM-dd').format(_selectedDate);
-      }else{
-
-      }
+      String iDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
 
       //새로운 데이터 저장
       dataList.add(DaysModel(
         uuid: Common.getUuid(), 
         title: title, 
-        standardDate: _i_date!, 
-        calculation: widget.calculor, 
-        icon: _selectedIcon.toString(),
+        standardDate: iDate, 
+        calculation: widget.calculor,
       ));
 
       List<String> newDataList = dataList.map((day) => json.encode(day.daysToJson())).toList();
@@ -77,11 +70,14 @@ class _DDayBottomSheetState extends State<DDayBottomSheet>{
 
 
       Fluttertoast.showToast(msg: '저장되었습니다.');
-      Navigator.pop(context);
+      Navigator.push(
+        context, 
+        MaterialPageRoute(builder: (context) => const TheDaysCard()),
+      );
     }else{
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('제목 또는 아이콘을 선택해야 합니다.'),
+          content: Text('제목을 선택해야 합니다.'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -113,46 +109,6 @@ class _DDayBottomSheetState extends State<DDayBottomSheet>{
               )
             ),
             const SizedBox(height: 20.0,),
-            const Text('Select Icon: '),
-            PopupMenuButton<IconData>(
-              onSelected: (icon){
-                setState(() {
-                  _selectedIcon = icon;
-                });
-              },
-              itemBuilder: (context){
-                return [
-                  const PopupMenuItem(
-                    value: Icons.domain_verification_outlined,
-                    child: Icon(Icons.domain_verification_outlined),
-                  ),
-                  const PopupMenuItem(
-                    value: Icons.wysiwyg_rounded,
-                    child: Icon(Icons.wysiwyg_rounded),
-                  ),
-                  const PopupMenuItem(
-                    value: Icons.access_alarm,
-                    child: Icon(Icons.access_alarm),
-                  ),
-                  const PopupMenuItem(
-                    value: Icons.check,
-                    child: Icon(Icons.check),
-                  ),
-                  const PopupMenuItem(
-                    value: Icons.yard_rounded,
-                    child: Icon(Icons.yard_rounded),
-                  ),
-                  const PopupMenuItem(
-                    value: Icons.wallet_travel_outlined,
-                    child: Icon(Icons.wallet_travel_outlined),
-                  ),
-                ];
-              },
-              child: Icon(
-                _selectedIcon ?? Icons.domain_verification_outlined,
-                size: 30,
-              ),
-            ),
           ],
         ),
       ),
