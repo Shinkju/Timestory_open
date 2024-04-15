@@ -23,12 +23,14 @@ class _DDayBottomSheetState extends State<DDayBottomSheet>{
   late SharedPreferences prefs;
   late TextEditingController _titleController;
   late DateTime _selectedDate;
+  ImageIcon? _selectedImage;
 
   @override
   void initState(){
     super.initState();
     _titleController = TextEditingController();
     _selectedDate = DateTime.now();
+    _selectedImage = null;
     initPrefs();
   }
 
@@ -63,13 +65,15 @@ class _DDayBottomSheetState extends State<DDayBottomSheet>{
         title: title, 
         standardDate: iDate, 
         calculation: widget.calculor,
+        icon: _selectedImage?.image.toString() ?? '',
       ));
 
       List<String> newDataList = dataList.map((day) => json.encode(day.daysToJson())).toList();
       await prefs.setStringList('daysInfo', newDataList);
 
-
       Fluttertoast.showToast(msg: '저장되었습니다.');
+      
+      setState(() {});
       Navigator.push(
         context, 
         MaterialPageRoute(builder: (context) => const TheDaysCard()),
@@ -77,7 +81,7 @@ class _DDayBottomSheetState extends State<DDayBottomSheet>{
     }else{
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('제목을 선택해야 합니다.'),
+          content: Text('제목을 작성해야 합니다.'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -109,6 +113,71 @@ class _DDayBottomSheetState extends State<DDayBottomSheet>{
               )
             ),
             const SizedBox(height: 20.0,),
+            const Text('Select Icon: '),
+            PopupMenuButton<ImageIcon>(
+              onSelected: (image){
+                setState(() {
+                  _selectedImage = image;
+                });
+              },
+              itemBuilder: (context){
+                return [
+                  PopupMenuItem(
+                    value: const ImageIcon(AssetImage('assets/images/icon/calendarIcon.png')),
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          'assets/images/icon/calendarIcon.png',
+                          width: 24,
+                          height: 24,
+                        ),
+                        const SizedBox(width: 10,),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: const ImageIcon(AssetImage('assets/images/icon/heartIcon.png')),
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          'assets/images/icon/heartIcon.png',
+                          width: 24,
+                          height: 24,
+                        ),
+                        const SizedBox(width: 10,),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: const ImageIcon(AssetImage('assets/images/icon/flowerIcon.png')),
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          'assets/images/icon/flowerIcon.png',
+                          width: 24,
+                          height: 24,
+                        ),
+                        const SizedBox(width: 10,),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: const ImageIcon(AssetImage('assets/images/icon/starsIcon.png')),
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          'assets/images/icon/starsIcon.png',
+                          width: 24,
+                          height: 24,
+                        ),
+                        const SizedBox(width: 10,),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+              child: _selectedImage ?? const ImageIcon(AssetImage('assets/images/icon/calendarIcon.png'), size: 24,),
+            ),
           ],
         ),
       ),

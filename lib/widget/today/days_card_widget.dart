@@ -138,42 +138,65 @@ class _DdayState extends State<Dday>{
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(3.0,),
-          border: Border.all(color: DEFAULT_COLOR),
+          border: Border.all(color: DEFAULT_COLOR, width: 2.0),
           color: Colors.white,
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 11),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.pink[100],
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(
+                    widget.daysInfo.icon,
+                    width: 24,
+                    height: 24,
+                    errorBuilder: (context, error, stackTrace){
+                      return Image.asset(
+                        'assets/images/icon/calendarIcon.png',
+                        width: 30,
+                        height: 30,
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10.0,),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      txt.toString(),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontFamily: "Lato",
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
                       widget.daysInfo.title,
                       style: const TextStyle(
                         fontFamily: "Lato",
-                        fontSize: 14,
+                        fontSize: 19,
                       ),
                     ),
                     Text(
                       widget.daysInfo.standardDate,
                       style: const TextStyle(
                         fontFamily: "Lato",
-                        fontSize: 12,
+                        fontSize: 14,
                         color: Colors.grey,
                       ),
                     ),
                   ],
+                ),
+              ),
+              Text(
+                txt.toString(),
+                style: const TextStyle(
+                  color: DEFAULT_COLOR,
+                  fontSize: 19,
+                  fontFamily: "Lato",
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
