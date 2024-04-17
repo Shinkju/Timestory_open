@@ -9,7 +9,7 @@ class ScheduleMemoModel{
     required this.content,
   });
 
-  factory ScheduleMemoModel.fromJson(Map<String, dynamic> json){  //factory: 클래스의 생성자 정의(복잡로직 필요, 캐시된 객체 반환, 객체생성 방법 중 이를 선택하는 로직이 필요)시 사용
+  factory ScheduleMemoModel.fromJson(Map<String, dynamic> json){ 
     return ScheduleMemoModel(
       year: json['year'],
       month: json['month'],

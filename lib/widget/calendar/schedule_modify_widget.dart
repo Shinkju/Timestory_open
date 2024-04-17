@@ -8,10 +8,12 @@ import 'package:timestory/model/schedule_memo_model.dart';
 
 class ScheduleModifySheet extends StatefulWidget{
   final ScheduleMemoModel memoInfo;
+  final VoidCallback onClose;
 
   const ScheduleModifySheet({
     super.key,
     required this.memoInfo,
+    required this.onClose,
   });
 
   @override
@@ -31,7 +33,7 @@ class _ScheduleModifySheetState extends State<ScheduleModifySheet>{
 
   @override
   void dispose(){
-    _contentController.dispose(); //컨트롤러 리소스 해제
+    _contentController.dispose();
     super.dispose();
   }
 
@@ -40,14 +42,13 @@ class _ScheduleModifySheetState extends State<ScheduleModifySheet>{
   }
 
   //update
-  void onSaveProssed() async{
+  void onSaveProssed(BuildContext context) async{
     String? _content = _contentController.text;
     if(_content.isNotEmpty){
       SharedPreferences prefs = await SharedPreferences.getInstance();
       List<String>? jsonDataList = prefs.getStringList('scheduleInfo');
 
       if(jsonDataList != null){
-        //기존 일정에서 수정할 일정 찾기
         List<ScheduleMemoModel> dataList = jsonDataList.map((jsonData) => ScheduleMemoModel.fromJson(json.decode(jsonData))).toList();
         for(int i=0; i<dataList.length; i++){
           if(dataList[i].uuid == widget.memoInfo.uuid){
@@ -65,7 +66,7 @@ class _ScheduleModifySheetState extends State<ScheduleModifySheet>{
         await prefs.setStringList("scheduleInfo", dataList.map((map) => jsonEncode(map.scheduleToJson())).toList());
         Fluttertoast.showToast(msg: "일정이 수정되었습니다.");
 
-        setState(() {}); //화면갱신
+        widget.onClose();
         Navigator.pop(context);
       }
     }else{
@@ -74,18 +75,24 @@ class _ScheduleModifySheetState extends State<ScheduleModifySheet>{
   }
 
   //delete
-  void onDeletePressed() async{
+  void onDeletePressed(BuildContext context) async{
     List<String>? jsonDataList = prefs.getStringList('scheduleInfo');
 
     if(jsonDataList != null){
       List<ScheduleMemoModel> dataList = jsonDataList.map((jsonData) => ScheduleMemoModel.fromJson(json.decode(jsonData))).toList();
-      dataList.removeWhere((memo) => memo.uuid == widget.memoInfo.uuid);
+      int indexRemove = dataList.indexWhere((memo) => memo.uuid == widget.memoInfo.uuid);
 
-      await prefs.setStringList("scheduleInfo", dataList.map((map) => jsonEncode(map.scheduleToJson())).toList());
-      Fluttertoast.showToast(msg: "일정이 삭제되었습니다.");
+      if(indexRemove != -1){
+        dataList.removeAt(indexRemove);
 
-      setState(() {}); //화면갱신
-      Navigator.pop(context);
+        await prefs.setStringList("scheduleInfo", dataList.map((map) => jsonEncode(map.scheduleToJson())).toList());
+        Fluttertoast.showToast(msg: "일정이 삭제되었습니다.");
+
+        widget.onClose();
+        Navigator.pop(context);
+      }else{
+        Fluttertoast.showToast(msg: "일정이 없습니다.");
+      }
     }
   }
 
@@ -95,7 +102,7 @@ class _ScheduleModifySheetState extends State<ScheduleModifySheet>{
 
     return SafeArea(
       child: Container(
-        height: MediaQuery.of(context).size.height * (3/4),
+        height: MediaQuery.of(context).size.height * (4/5),
         color: Colors.white,
         child: Padding(
           padding: EdgeInsets.only(
@@ -136,25 +143,24 @@ class _ScheduleModifySheetState extends State<ScheduleModifySheet>{
                 ),
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
-                    onPressed: onDeletePressed,
+                    onPressed: () => onDeletePressed(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: DEFAULT_COLOR,
                       foregroundColor: Colors.white,
-                      //shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                     ), 
                     child: const Text("삭제"),
                   ),
-                  const SizedBox(width: 5),
+                  const SizedBox(width: 10),
                   ElevatedButton(
-                    onPressed: onSaveProssed,
+                    onPressed: () => onSaveProssed(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: DEFAULT_COLOR,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                     ), 
                     child: const Text("수정"),
                   ),

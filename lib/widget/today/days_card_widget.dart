@@ -2,28 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:timestory/common/colors.dart';
 import 'package:timestory/model/days_info_model.dart';
 import 'package:timestory/service/days_service.dart';
+import 'package:timestory/widget/today/days_modify_widget.dart';
 
 class DdayCard extends StatefulWidget{
   const DdayCard({super.key});
   
   @override
-  State<DdayCard> createState() => _DaysCardState();
+  State<DdayCard> createState() => DaysCardState();
 }
 
-class _DaysCardState extends State<DdayCard>{
-  late Future<List<DaysModel>> days;
-  int daysCardCount = 0;
+class DaysCardState extends State<DdayCard>{
+  Future<List<DaysModel>> days = DaysService.getDaysInfoByAll();
 
   @override
   void initState(){
     super.initState();
-    days = DaysService.getDaysInfoByAll();
-    days.then((value){
-      setState(() {
-        daysCardCount = value.length;
-      });
-    }).catchError((error){
-      print(error);
+  }
+
+  void refreshData() {
+    setState(() {
+      days = DaysService.getDaysInfoByAll();
     });
   }
 
@@ -34,15 +32,18 @@ class _DaysCardState extends State<DdayCard>{
       builder: (context, snapshot){
         if(snapshot.hasData){
           if(snapshot.data!.isNotEmpty){
-            return Column(
-              children: [
-                const SizedBox(height: 8,),
-                for(var dday in snapshot.data ?? [])
-                  Dday(
-                    daysInfo: dday,
-                    uuid: dday.uuid,
-                  ),
-              ],
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 8,),
+                  for(var dday in snapshot.data ?? [])
+                    Dday(
+                      daysInfo: dday,
+                      uuid: dday.uuid,
+                      onModify: refreshData,
+                    ),
+                ],
+              ),
             );
           }else{
             return const Center(
@@ -83,11 +84,13 @@ class _DaysCardState extends State<DdayCard>{
 class Dday extends StatefulWidget{
   final DaysModel daysInfo;
   final String uuid;
+  final VoidCallback onModify;
 
   const Dday({
     super.key,
     required this.daysInfo,
     required this.uuid,
+    required this.onModify,
   });
 
   @override
@@ -131,7 +134,15 @@ class _DdayState extends State<Dday>{
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: (){ //수정페이지
-        
+        showModalBottomSheet(
+          context: context,
+          isDismissible: true,
+          isScrollControlled: true,
+          builder: (_) => DaysModifySheet(
+            daysInfo: widget.daysInfo,
+            onClose: widget.onModify,
+          ),
+        );
       },
       child: Container(
         margin: const EdgeInsets.all(8.0,),
@@ -155,8 +166,8 @@ class _DdayState extends State<Dday>{
                   padding: const EdgeInsets.all(8.0),
                   child: Image.asset(
                     widget.daysInfo.icon,
-                    width: 24,
-                    height: 24,
+                    width: 30,
+                    height: 30,
                     errorBuilder: (context, error, stackTrace){
                       return Image.asset(
                         'assets/images/icon/calendarIcon.png',

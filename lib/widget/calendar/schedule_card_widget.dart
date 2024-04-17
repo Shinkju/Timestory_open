@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:timestory/model/schedule_memo_model.dart';
 import 'package:timestory/service/schedule_service.dart';
@@ -18,10 +20,10 @@ class ScheduleCard extends StatefulWidget{
   });
 
   @override
-  State<ScheduleCard> createState() => _ScheduleCardState();
+  State<ScheduleCard> createState() => ScheduleCardState();
 }
 
-class _ScheduleCardState extends State<ScheduleCard> {
+class ScheduleCardState extends State<ScheduleCard> {
   late Future<List<ScheduleMemoModel>> memos;
   int scheduleCardMemoCount = 0;
 
@@ -29,6 +31,19 @@ class _ScheduleCardState extends State<ScheduleCard> {
   void initState(){
     super.initState();
     fetchMemos();
+  }
+
+  void refreshData(){
+    setState(() {
+      memos = ScheduleService.getScheduleMemosById(widget.year, widget.month, widget.day);
+      memos.then((value){
+        setState(() {
+          scheduleCardMemoCount = value.length;
+        });
+      }).catchError((error){
+        print(error);
+      });
+    });
   }
 
   void fetchMemos(){
@@ -48,22 +63,25 @@ class _ScheduleCardState extends State<ScheduleCard> {
       future: memos,
       builder: (context, snapshot){
         if(snapshot.hasData){
-          return Column(
-            children: [
-              TodayBanner(
-                selectedDate: widget.selectedDate, 
-                count: scheduleCardMemoCount,
-              ),
-              const SizedBox(height: 8,),
-              for(var memo in snapshot.data ?? [])
-                Memo(
-                  memoInfo: memo,
-                  uuid: memo.uuid,
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                TodayBanner(
+                  selectedDate: widget.selectedDate, 
+                  count: scheduleCardMemoCount,
                 ),
-            ],
+                const SizedBox(height: 8,),
+                for(var memo in snapshot.data ?? [])
+                  Memo(
+                    memoInfo: memo,
+                    uuid: memo.uuid,
+                    onModify: refreshData,
+                  ),
+              ],
+            ),
           );
         }
-        return Container(); //데이터가 없는경우
+        return Container();
       },
     );
   }
@@ -73,11 +91,13 @@ class _ScheduleCardState extends State<ScheduleCard> {
 class Memo extends StatefulWidget {
   final ScheduleMemoModel memoInfo;
   final String uuid;
+  final VoidCallback onModify;
 
   const Memo({
     super.key,
     required this.memoInfo,
     required this.uuid,
+    required this.onModify,
   });
 
   @override
@@ -94,7 +114,6 @@ class _MemoState extends State<Memo> {
     super.didChangeDependencies();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -102,9 +121,10 @@ class _MemoState extends State<Memo> {
         showModalBottomSheet(
           context: context,
           isDismissible: true,
-          isScrollControlled: true, //키보드가림 해결
+          isScrollControlled: true,
           builder: (_) => ScheduleModifySheet(
             memoInfo: widget.memoInfo,
+            onClose: widget.onModify,
           ),
         );
       },

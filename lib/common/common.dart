@@ -1,7 +1,6 @@
 import 'package:uuid/uuid.dart';
 
 class Common{
-
   //UUID 생성
   static String getUuid(){
     var uuid = const Uuid();

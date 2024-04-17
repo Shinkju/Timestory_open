@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:timestory/model/schedule_memo_model.dart';
+import 'package:timestory/service/schedule_service.dart';
 import 'package:timestory/widget/calendar/schedule_card_widget.dart';
 import 'package:timestory/common/colors.dart';
 import 'package:timestory/widget/calendar/schedule_sheet_widget.dart';
@@ -14,10 +15,22 @@ class CalendarWidget extends StatefulWidget{
 }
 
 class _CalendarWidgetState extends State<CalendarWidget> {
-  //final storage = const FlutterSecureStorage();
-  //int scheduleCardMemoCount = 0; //스케줄 메모수
+  final GlobalKey<ScheduleCardState> scheduleCardKey = GlobalKey<ScheduleCardState>();
+  bool check = false;
 
-  //초기날짜
+  @override
+  void initState(){
+    super.initState();
+    initializeDateFormatting('ko_KR', null);
+  }
+
+  void refreshScheduleCard(){
+    if(scheduleCardKey.currentState != null){
+      scheduleCardKey.currentState!.refreshData();
+      check = true;
+    }
+  }
+
   DateTime selectedDate = DateTime.utc(
     DateTime.now().year,
     DateTime.now().month,
@@ -25,22 +38,17 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   );
 
   //선택일 변경
-  void onDaySelected(DateTime selectedDate, DateTime focusedDate) async{
+  void onDaySelected(DateTime selectedDate, DateTime focusedDate){
     setState(() {
       this.selectedDate = selectedDate;
     });
   }
 
-  void onPageChanged(DateTime focusedDate){ //월 변경
+  //월 변경
+  void onPageChanged(DateTime focusedDate){
     setState(() {
       selectedDate = DateTime(focusedDate.year, focusedDate.month, 1);
     });
-  }
-  
-  @override
-  void initState(){
-    super.initState();
-    initializeDateFormatting('ko_KR', null);
   }
 
   @override
@@ -49,21 +57,19 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       body: Column(
         children: [
           TableCalendar(
-            firstDay: DateTime(2024,1,1), //달력 시작날짜
-            lastDay: DateTime(3000,1,1),  //달력 마지막날짜
-            focusedDay: selectedDate,   //현재 포거스날짜
+            firstDay: DateTime(2024,1,1), //시작날짜
+            lastDay: DateTime(3000,1,1),  //마지막날짜
+            focusedDay: selectedDate,   //포거스날짜
             locale: 'ko_KR',
             daysOfWeekHeight: 30,
-            //날짜가 선택
             onDaySelected: onDaySelected,
-            //선택날짜 분기로직
             selectedDayPredicate: (day) {
               return isSameDay(selectedDate, day);
             },
-            //최상단 스타일
+            //상단 스타일
             headerStyle: const HeaderStyle(
-              formatButtonVisible: false, //달력 크기선택 옵션
-              titleCentered: true,  //제목 중앙정렬
+              formatButtonVisible: false, //크기 옵션
+              titleCentered: true,  //정렬
               leftChevronVisible: true,
               rightChevronVisible: true
             ),
@@ -106,8 +112,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               ),
             ),
             calendarBuilders: CalendarBuilders(
-              dowBuilder: (context, day) { //dowBuilder: 요일칸 제어
-                switch(day.weekday){
+              dowBuilder: (context, date) { //요일칸 제어
+                switch(date.weekday){
                   case 1:
                     return const Center(child: Text('월'),);
                   case 2:
@@ -127,11 +133,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 }
               },
             ),
-            onPageChanged: onPageChanged, //월 변경 콜백
+            onPageChanged: onPageChanged, //월 변경
           ),
           const SizedBox(height: 8,),
           ScheduleCard(
-            key: UniqueKey(), //계속 바뀐값을 전달하기 위해 사용
+            key: !check ? UniqueKey() : scheduleCardKey,
             year: selectedDate.year.toString(), 
             month: selectedDate.month.toString(), 
             day: selectedDate.day.toString(),
@@ -145,8 +151,13 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           showModalBottomSheet(
             context: context,
             isDismissible: true,
-            builder: (_) => ScheduleBottomSheet(year: selectedDate.year.toString(), month: selectedDate.month.toString(), day: selectedDate.day.toString()),
-            isScrollControlled: true, //키보드가림 해결
+            builder: (_) => ScheduleBottomSheet(
+              year: selectedDate.year.toString(), 
+              month: selectedDate.month.toString(), 
+              day: selectedDate.day.toString(),
+              onClose: refreshScheduleCard,
+            ),
+            isScrollControlled: true,
           );
         },
         child: const Icon(Icons.add,),

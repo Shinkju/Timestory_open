@@ -8,12 +8,14 @@ import 'package:timestory/model/schedule_memo_model.dart';
 
 class ScheduleBottomSheet extends StatefulWidget{
   final String year, month, day;
+  final VoidCallback onClose;
 
   const ScheduleBottomSheet({
     super.key,
     required this.year,
     required this.month,
-    required this.day,    
+    required this.day,
+    required this.onClose,    
   });
 
   @override
@@ -35,7 +37,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
   }
 
   //Save
-  void onSaveProssed() async {
+  void onSaveProssed(BuildContext context) async {
     if(_content.isNotEmpty){
       SharedPreferences prefs = await SharedPreferences.getInstance();
       List<String>? existingData = prefs.getStringList('scheduleInfo');
@@ -57,16 +59,17 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
       
       //저장
       await prefs.setStringList('scheduleInfo', dataList.map((map) => jsonEncode(map.scheduleToJson())).toList());
+      Fluttertoast.showToast(msg: "추가되었습니다.");
 
-      final List<String>? test = prefs.getStringList('scheduleInfo');
-      print('올바르게 저장됐는지 : $test');
-
-      Fluttertoast.showToast(msg: "일정이 추가되었습니다.");
-
-      setState(() {}); //화면갱신
-      Navigator.pop(context); // 바텀시트 닫기
+      widget.onClose();
+      Navigator.pop(context);
     }else{
-      Fluttertoast.showToast(msg: "내용을 입력하세요");
+       ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('내용을 입력하세요.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 
@@ -76,7 +79,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
 
     return SafeArea(
       child: Container(
-        height: MediaQuery.of(context).size.height *(3/4),
+        height: MediaQuery.of(context).size.height *(4/5),
         color: Colors.white,
         child: Padding(
           padding: EdgeInsets.only(
@@ -124,7 +127,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: onSaveProssed,
+                  onPressed: () => onSaveProssed(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: DEFAULT_COLOR,
                     foregroundColor: Colors.white,
@@ -159,6 +162,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
   final TextEditingController _controller = TextEditingController();
 
   @override
+  void dispose(){
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,12 +182,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
         Expanded(
           flex: 1,
           child: TextFormField(
-            cursorColor: Colors.grey,   //커서색상
-            maxLines: null,  //컨텐츠필드는 한줄 이상 작성 가능
+            cursorColor: Colors.grey,
+            maxLines: null,
             keyboardType: TextInputType.multiline,
             decoration: InputDecoration(
-              border: InputBorder.none, //기본 테두리
-              focusedBorder: OutlineInputBorder( //포커스 스타일
+              border: InputBorder.none,
+              focusedBorder: OutlineInputBorder(
                 borderSide: const BorderSide(color: DEFAULT_COLOR, width: 1.3),
                 borderRadius: BorderRadius.circular(1.0),
               ),
@@ -189,11 +198,5 @@ class _CustomTextFieldState extends State<CustomTextField> {
         ),
       ],
     );
-  }
-
-  @override
-  void dispose(){
-    _controller.dispose();
-    super.dispose();
   }
 }
