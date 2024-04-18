@@ -77,7 +77,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
   Widget build(BuildContext context) {
     final bottomInsert = MediaQuery.of(context).viewInsets.bottom;
 
-    return SafeArea(
+    return SingleChildScrollView(
       child: Container(
         height: MediaQuery.of(context).size.height *(4/5),
         color: Colors.white,

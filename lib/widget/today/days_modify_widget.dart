@@ -141,13 +141,13 @@ class _DaysModifySheetState extends State<DaysModifySheet>{
 
     return SingleChildScrollView(
       child: Container(
-        height: MediaQuery.of(context).size.height * (4/5),
+        height: MediaQuery.of(context).size.height *(4/5),
         color: Colors.white,
         child: Padding(
           padding: EdgeInsets.only(
             left: 8,
             right: 8,
-            top: 8,
+            top: 30,
             bottom: bottomInsert,
           ),
           child: Column(
@@ -159,8 +159,12 @@ class _DaysModifySheetState extends State<DaysModifySheet>{
                     flex: 4,
                     child: TextField(
                       controller: _titleController,
-                      decoration: const InputDecoration(
-                        labelText: '디데이 제목을 입력하세요.'
+                      decoration: InputDecoration(
+                        labelText: _titleController.text.isNotEmpty ? '' : '디데이제목을 입력하세요',
+                        labelStyle: const TextStyle(
+                          fontFamily: "Lato",
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
                   ),

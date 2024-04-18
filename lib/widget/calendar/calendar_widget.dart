@@ -1,8 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:timestory/model/schedule_memo_model.dart';
-import 'package:timestory/service/schedule_service.dart';
 import 'package:timestory/widget/calendar/schedule_card_widget.dart';
 import 'package:timestory/common/colors.dart';
 import 'package:timestory/widget/calendar/schedule_sheet_widget.dart';
@@ -15,40 +16,61 @@ class CalendarWidget extends StatefulWidget{
 }
 
 class _CalendarWidgetState extends State<CalendarWidget> {
-  final GlobalKey<ScheduleCardState> scheduleCardKey = GlobalKey<ScheduleCardState>();
+  Map<DateTime, List<Event>> events = {};
   bool check = false;
 
-  @override
-  void initState(){
-    super.initState();
-    initializeDateFormatting('ko_KR', null);
-  }
-
-  void refreshScheduleCard(){
-    if(scheduleCardKey.currentState != null){
-      scheduleCardKey.currentState!.refreshData();
-      check = true;
-    }
-  }
-
+  final GlobalKey<ScheduleCardState> scheduleCardKey = GlobalKey<ScheduleCardState>();
+  
   DateTime selectedDate = DateTime.utc(
     DateTime.now().year,
     DateTime.now().month,
     DateTime.now().day,
   );
 
-  //선택일 변경
+  @override
+  void initState(){
+    super.initState();
+    initializeDateFormatting('ko_KR', null);
+    updateEventMarkers();
+  }
+
+  //데이터로드
+  void refreshScheduleCard() async{
+    check = true;
+    if(check){
+      if(scheduleCardKey.currentState != null){
+        scheduleCardKey.currentState!.refreshData();
+      }
+    }
+    updateEventMarkers();
+  }
+
+  //일 선택
   void onDaySelected(DateTime selectedDate, DateTime focusedDate){
     setState(() {
       this.selectedDate = selectedDate;
     });
   }
 
-  //월 변경
+  //월 선택
   void onPageChanged(DateTime focusedDate){
     setState(() {
       selectedDate = DateTime(focusedDate.year, focusedDate.month, 1);
     });
+    updateEventMarkers();
+  }
+
+  void updateEventMarkers() async{
+    Map<DateTime, List<Event>> loadedEvents = await loadScheduleFromPreferences();
+    setState(() {
+        events = loadedEvents;
+    });
+    check = false;
+  }
+
+  List<Event> _getEventsForDay(DateTime day){
+    DateTime dayWithoutTime = DateTime(day.year, day.month, day.day);
+    return events[dayWithoutTime] ?? [];
   }
 
   @override
@@ -57,8 +79,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       body: Column(
         children: [
           TableCalendar(
-            firstDay: DateTime(2024,1,1), //시작날짜
-            lastDay: DateTime(3000,1,1),  //마지막날짜
+            firstDay: DateTime(2024,1,1), //시작날
+            lastDay: DateTime(3000,1,1),  //마지막날
             focusedDay: selectedDate,   //포거스날짜
             locale: 'ko_KR',
             daysOfWeekHeight: 30,
@@ -110,7 +132,13 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 fontFamily: "Lato",
                 color: LIGHT_GREY_COLOR,
               ),
+              markerSize: 10.0,
+              markerDecoration: const BoxDecoration(
+                color: DEFAULT_COLOR,
+                shape: BoxShape.circle,
+              ),
             ),
+            eventLoader: _getEventsForDay,
             calendarBuilders: CalendarBuilders(
               dowBuilder: (context, date) { //요일칸 제어
                 switch(date.weekday){
@@ -136,12 +164,17 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             onPageChanged: onPageChanged, //월 변경
           ),
           const SizedBox(height: 8,),
-          ScheduleCard(
-            key: !check ? UniqueKey() : scheduleCardKey,
-            year: selectedDate.year.toString(), 
-            month: selectedDate.month.toString(), 
-            day: selectedDate.day.toString(),
-            selectedDate: selectedDate,
+          Expanded(
+            child: SingleChildScrollView(
+              child: ScheduleCard(
+                key: check ? scheduleCardKey : UniqueKey(),
+                year: selectedDate.year.toString(), 
+                month: selectedDate.month.toString(), 
+                day: selectedDate.day.toString(),
+                selectedDate: selectedDate,
+                onUpdateMarker: updateEventMarkers,
+              ),
+            ),
           ),
         ],
       ),
@@ -164,4 +197,38 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       ),
     );
   }
+}
+
+class Event {
+  String title;
+
+  Event(this.title);
+}
+
+Future<Map<DateTime, List<Event>>> loadScheduleFromPreferences() async{
+  final prefs = await SharedPreferences.getInstance();
+  List<String>? jsonDataList = prefs.getStringList('scheduleInfo');
+  Map<DateTime, List<Event>> monthlyEvents = {};
+
+  if(jsonDataList != null){
+    for(String jsonData in jsonDataList){
+      try{
+        Map<String, dynamic> data = json.decode(jsonData);
+        int year = int.parse(data['year'].toString());
+        int month = int.parse(data['month'].toString());
+        int day = int.parse(data['day'].toString());
+
+        DateTime dateKey = DateTime(year, month, day);
+        String title = data['title'].toString();
+
+        if(!monthlyEvents.containsKey(dateKey)){
+          monthlyEvents[dateKey] = [];
+        }
+        monthlyEvents[dateKey]!.add(Event(title));
+      }catch(e){
+        print('ERROR!! : $e');
+      }
+    }
+  }
+  return monthlyEvents;
 }

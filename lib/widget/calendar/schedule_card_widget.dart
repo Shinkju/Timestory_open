@@ -10,6 +10,7 @@ import 'package:timestory/widget/calendar/daybar_widget.dart';
 class ScheduleCard extends StatefulWidget{
   final String year, month, day;
   final DateTime selectedDate;
+  final VoidCallback onUpdateMarker;
 
   const ScheduleCard({
     super.key,
@@ -17,6 +18,7 @@ class ScheduleCard extends StatefulWidget{
     required this.month,
     required this.day,
     required this.selectedDate,
+    required this.onUpdateMarker,
   });
 
   @override
@@ -33,17 +35,18 @@ class ScheduleCardState extends State<ScheduleCard> {
     fetchMemos();
   }
 
-  void refreshData(){
+  void refreshData() {
     setState(() {
-      memos = ScheduleService.getScheduleMemosById(widget.year, widget.month, widget.day);
-      memos.then((value){
-        setState(() {
-          scheduleCardMemoCount = value.length;
+        memos = ScheduleService.getScheduleMemosById(widget.year, widget.month, widget.day);
+        memos.then((value) {
+            setState(() {
+                scheduleCardMemoCount = value.length;
+            });
+        }).catchError((error) {
+            print('refreshData: 에러 발생 - $error');
         });
-      }).catchError((error){
-        print(error);
-      });
     });
+    widget.onUpdateMarker();//calendar marker
   }
 
   void fetchMemos(){
@@ -56,6 +59,7 @@ class ScheduleCardState extends State<ScheduleCard> {
       print(error);
     });
   }
+
   
   @override
   Widget build(BuildContext context) {
@@ -141,13 +145,17 @@ class _MemoState extends State<Memo> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                widget.memoInfo.content,
-                style: const TextStyle(
-                  color: DEFAULT_COLOR,
-                  fontSize: 13.5,
-                  fontFamily: "Lato",
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  widget.memoInfo.content,
+                  style: const TextStyle(
+                    color: DEFAULT_COLOR,
+                    fontSize: 13.5,
+                    fontFamily: "Lato",
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ),
               const Icon(
