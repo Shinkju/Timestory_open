@@ -1,19 +1,25 @@
 class ScheduleMemoModel{
-  final String year, month, day, uuid, content;
+  final String sYear, sMonth, sDay, eYear, eMonth, eDay, uuid, content;
 
   ScheduleMemoModel({
-    required this.year,
-    required this.month,
-    required this.day,
+    required this.sYear,
+    required this.sMonth,
+    required this.sDay,
+    required this.eYear,
+    required this.eMonth,
+    required this.eDay,
     required this.uuid,
     required this.content,
   });
 
   factory ScheduleMemoModel.fromJson(Map<String, dynamic> json){ 
     return ScheduleMemoModel(
-      year: json['year'],
-      month: json['month'],
-      day: json['day'],
+      sYear: json['sYear'],
+      sMonth: json['sMonth'],
+      sDay: json['sDay'],
+      eYear: json['eYear'],
+      eMonth: json['eMonth'],
+      eDay: json['eDay'],
       uuid: json['uuid'],
       content: json['content'],
     );
@@ -21,9 +27,12 @@ class ScheduleMemoModel{
 
   Map<String,dynamic> scheduleToJson(){
     return{
-      'year': year,
-      'month': month,
-      'day': day,
+      'sYear': sYear,
+      'sMonth': sMonth,
+      'sDay': sDay,
+      'eYear': eYear,
+      'eMonth': eMonth,
+      'eDay': eDay,
       'uuid': uuid,
       'content': content,
     };
@@ -31,6 +40,6 @@ class ScheduleMemoModel{
 
   @override
   String toString() {
-    return 'ScheduleMemoModel{year: $year, month: $month, day: $day, uuid: $uuid, content: $content}';
+    return 'ScheduleMemoModel{sYear: $sYear, sMonth: $sMonth, sDay: $sDay, eYear: $eYear, eMonth: $eMonth, eDay: $eDay, uuid: $uuid, content: $content}';
   }
 }
