@@ -51,12 +51,6 @@ class ScheduleService{
     if(scheduleInfo != null){
       for(String jsonStr in scheduleInfo){
         final Map<String, dynamic> scheduleMap = jsonDecode(jsonStr);
-        /*final eYear = scheduleMap['year'];
-        final eMonth = scheduleMap['month'];
-        if(eYear == year && eMonth == month){
-          memosInstance.add(ScheduleMemoModel.fromJson(scheduleMap));
-        }*/
-
         final sYear = scheduleMap['sYear'];
         final sMonth = scheduleMap['sMonth'];
         final sDay = scheduleMap['sDay'];
