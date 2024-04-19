@@ -8,7 +8,7 @@ import 'package:timestory/widget/calendar/schedule_card_widget.dart';
 import 'package:timestory/common/colors.dart';
 import 'package:timestory/widget/calendar/schedule_sheet_widget.dart';
 
-class CalendarWidget extends StatefulWidget{
+class CalendarWidget extends StatefulWidget {
   const CalendarWidget({super.key});
 
   @override
@@ -19,8 +19,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   Map<DateTime, List<Event>> events = {};
   bool check = false;
 
-  final GlobalKey<ScheduleCardState> scheduleCardKey = GlobalKey<ScheduleCardState>();
-  
+  final GlobalKey<ScheduleCardState> scheduleCardKey =
+      GlobalKey<ScheduleCardState>();
+
   DateTime selectedDate = DateTime.utc(
     DateTime.now().year,
     DateTime.now().month,
@@ -28,17 +29,17 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   );
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     initializeDateFormatting('ko_KR', null);
     updateEventMarkers();
   }
 
   //데이터로드
-  void refreshScheduleCard() async{
+  void refreshScheduleCard() async {
     check = true;
-    if(check){
-      if(scheduleCardKey.currentState != null){
+    if (check) {
+      if (scheduleCardKey.currentState != null) {
         scheduleCardKey.currentState!.refreshData();
       }
     }
@@ -46,29 +47,30 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   }
 
   //일 선택
-  void onDaySelected(DateTime selectedDate, DateTime focusedDate){
+  void onDaySelected(DateTime selectedDate, DateTime focusedDate) {
     setState(() {
       this.selectedDate = selectedDate;
     });
   }
 
   //월 선택
-  void onPageChanged(DateTime focusedDate){
+  void onPageChanged(DateTime focusedDate) {
     setState(() {
       selectedDate = DateTime(focusedDate.year, focusedDate.month, 1);
     });
     updateEventMarkers();
   }
 
-  void updateEventMarkers() async{
-    Map<DateTime, List<Event>> loadedEvents = await loadScheduleFromPreferences();
+  void updateEventMarkers() async {
+    Map<DateTime, List<Event>> loadedEvents =
+        await loadScheduleFromPreferences();
     setState(() {
-        events = loadedEvents;
+      events = loadedEvents;
     });
     check = false;
   }
 
-  List<Event> _getEventsForDay(DateTime day){
+  List<Event> _getEventsForDay(DateTime day) {
     DateTime dayWithoutTime = DateTime(day.year, day.month, day.day);
     return events[dayWithoutTime] ?? [];
   }
@@ -79,9 +81,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       body: Column(
         children: [
           TableCalendar(
-            firstDay: DateTime(2024,1,1), //시작날
-            lastDay: DateTime(3000,1,1),  //마지막날
-            focusedDay: selectedDate,   //포거스날짜
+            firstDay: DateTime(2024, 1, 1), //시작날
+            lastDay: DateTime(3000, 1, 1), //마지막날
+            focusedDay: selectedDate, //포거스날짜
             locale: 'ko_KR',
             daysOfWeekHeight: 30,
             onDaySelected: onDaySelected,
@@ -91,48 +93,61 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             //상단 스타일
             headerStyle: const HeaderStyle(
               formatButtonVisible: false, //크기 옵션
-              titleCentered: true,  //정렬
+              titleCentered: true, //정렬
               leftChevronVisible: true,
-              rightChevronVisible: true
+              rightChevronVisible: true,
+              titleTextStyle: TextStyle(
+                fontFamily: "Lato",
+                fontSize: 22,
+                color: DEFAULT_COLOR,
+              ),
             ),
             calendarStyle: CalendarStyle(
               outsideDaysVisible: false,
-              defaultDecoration: BoxDecoration(  //기본 날짜
+              defaultDecoration: BoxDecoration(
+                //기본 날짜
                 borderRadius: BorderRadius.circular(6.0),
                 color: LIGHT_GREY_COLOR,
               ),
-              weekendDecoration: BoxDecoration(  //주말 날짜
+              weekendDecoration: BoxDecoration(
+                //주말 날짜
                 borderRadius: BorderRadius.circular(6.0),
                 color: LIGHT_GREY_COLOR,
               ),
-              selectedDecoration: BoxDecoration(  //선택된 날짜
+              selectedDecoration: BoxDecoration(
+                //선택된 날짜
                 borderRadius: null,
                 border: Border.all(
                   color: DEFAULT_COLOR,
                   width: 1.0,
                 ),
               ),
-              todayDecoration: BoxDecoration( //오늘 날짜
+              todayDecoration: BoxDecoration(
+                //오늘 날짜
                 borderRadius: BorderRadius.circular(6.0),
                 color: DARK_GREY_COLOR,
               ),
-              defaultTextStyle: TextStyle(  //기본 글꼴
+              defaultTextStyle: TextStyle(
+                //기본 글꼴
                 fontFamily: "Lato",
                 color: DARK_GREY_COLOR,
               ),
-              weekendTextStyle: TextStyle(  //주말 글꼴
+              weekendTextStyle: TextStyle(
+                //주말 글꼴
                 fontFamily: "Lato",
                 color: DARK_GREY_COLOR,
               ),
-              selectedTextStyle: const TextStyle(  //선택된 날짜 글꼴
+              selectedTextStyle: const TextStyle(
+                //선택된 날짜 글꼴
                 fontFamily: "Lato",
                 color: DEFAULT_COLOR,
               ),
-              todayTextStyle: TextStyle(  //오늘 날짜 글꼴
+              todayTextStyle: TextStyle(
+                //오늘 날짜 글꼴
                 fontFamily: "Lato",
                 color: LIGHT_GREY_COLOR,
               ),
-              markerSize: 10.0,
+              markerSize: 7,
               markerDecoration: const BoxDecoration(
                 color: DEFAULT_COLOR,
                 shape: BoxShape.circle,
@@ -140,22 +155,73 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             ),
             eventLoader: _getEventsForDay,
             calendarBuilders: CalendarBuilders(
-              dowBuilder: (context, date) { //요일칸 제어
-                switch(date.weekday){
+              dowBuilder: (context, date) {
+                //요일칸 제어
+                switch (date.weekday) {
                   case 1:
-                    return const Center(child: Text('월'),);
+                    return const Center(
+                      child: Text(
+                        '월',
+                        style: TextStyle(
+                          fontFamily: "Lato",
+                        ),
+                      ),
+                    );
                   case 2:
-                    return const Center(child: Text('화'),);
+                    return const Center(
+                      child: Text(
+                        '화',
+                        style: TextStyle(
+                          fontFamily: "Lato",
+                        ),
+                      ),
+                    );
                   case 3:
-                    return const Center(child: Text('수'),);
+                    return const Center(
+                      child: Text(
+                        '수',
+                        style: TextStyle(
+                          fontFamily: "Lato",
+                        ),
+                      ),
+                    );
                   case 4:
-                    return const Center(child: Text('목'),);
+                    return const Center(
+                      child: Text(
+                        '목',
+                        style: TextStyle(
+                          fontFamily: "Lato",
+                        ),
+                      ),
+                    );
                   case 5:
-                    return const Center(child: Text('금'),);
+                    return const Center(
+                      child: Text(
+                        '금',
+                        style: TextStyle(
+                          fontFamily: "Lato",
+                        ),
+                      ),
+                    );
                   case 6:
-                    return const Center(child: Text('토'),);
+                    return const Center(
+                      child: Text(
+                        '토',
+                        style: TextStyle(
+                          fontFamily: "Lato",
+                        ),
+                      ),
+                    );
                   case 7:
-                    return const Center(child: Text('일', style: TextStyle(color: Colors.red),),);
+                    return const Center(
+                      child: Text(
+                        '일',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontFamily: "Lato",
+                        ),
+                      ),
+                    );
                   default:
                     return const SizedBox();
                 }
@@ -163,13 +229,15 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             ),
             onPageChanged: onPageChanged, //월 변경
           ),
-          const SizedBox(height: 8,),
+          const SizedBox(
+            height: 8,
+          ),
           Expanded(
             child: SingleChildScrollView(
               child: ScheduleCard(
                 key: check ? scheduleCardKey : UniqueKey(),
-                year: selectedDate.year.toString(), 
-                month: selectedDate.month.toString(), 
+                year: selectedDate.year.toString(),
+                month: selectedDate.month.toString(),
                 day: selectedDate.day.toString(),
                 selectedDate: selectedDate,
                 onUpdateMarker: updateEventMarkers,
@@ -180,20 +248,22 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: DEFAULT_COLOR,
-        onPressed: (){
+        onPressed: () {
           showModalBottomSheet(
             context: context,
             isDismissible: true,
             builder: (_) => ScheduleBottomSheet(
-              year: selectedDate.year.toString(), 
-              month: selectedDate.month.toString(), 
+              year: selectedDate.year.toString(),
+              month: selectedDate.month.toString(),
               day: selectedDate.day.toString(),
               onClose: refreshScheduleCard,
             ),
             isScrollControlled: true,
           );
         },
-        child: const Icon(Icons.add,),
+        child: const Icon(
+          Icons.add,
+        ),
       ),
     );
   }
@@ -205,14 +275,14 @@ class Event {
   Event(this.title);
 }
 
-Future<Map<DateTime, List<Event>>> loadScheduleFromPreferences() async{
+Future<Map<DateTime, List<Event>>> loadScheduleFromPreferences() async {
   final prefs = await SharedPreferences.getInstance();
   List<String>? jsonDataList = prefs.getStringList('scheduleInfo');
   Map<DateTime, List<Event>> monthlyEvents = {};
 
-  if(jsonDataList != null){
-    for(String jsonData in jsonDataList){
-      try{
+  if (jsonDataList != null) {
+    for (String jsonData in jsonDataList) {
+      try {
         Map<String, dynamic> data = json.decode(jsonData);
         int year = int.parse(data['year'].toString());
         int month = int.parse(data['month'].toString());
@@ -221,11 +291,11 @@ Future<Map<DateTime, List<Event>>> loadScheduleFromPreferences() async{
         DateTime dateKey = DateTime(year, month, day);
         String title = data['title'].toString();
 
-        if(!monthlyEvents.containsKey(dateKey)){
+        if (!monthlyEvents.containsKey(dateKey)) {
           monthlyEvents[dateKey] = [];
         }
         monthlyEvents[dateKey]!.add(Event(title));
-      }catch(e){
+      } catch (e) {
         print('ERROR!! : $e');
       }
     }

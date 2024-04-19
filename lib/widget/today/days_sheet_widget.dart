@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart' as dpt;
+import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart'
+    as dpt;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,48 +10,60 @@ import 'package:timestory/common/common.dart';
 import 'package:timestory/common/imageIcon.dart';
 import 'package:timestory/model/days_info_model.dart';
 
-class DDayBottomSheet extends StatefulWidget{
-  final String calculor;
+class DDayBottomSheet extends StatefulWidget {
+  final String calculator;
   final VoidCallback onInsert;
 
   const DDayBottomSheet({
     super.key,
-    required this.calculor,
+    required this.calculator,
     required this.onInsert,
   });
-  
+
   @override
   State<StatefulWidget> createState() => _DDayBottomSheetState();
 }
 
-class _DDayBottomSheetState extends State<DDayBottomSheet>{
+class _DDayBottomSheetState extends State<DDayBottomSheet> {
   late SharedPreferences prefs;
   late TextEditingController _titleController;
   late DateTime _selectedDate;
   late String? _selectedImage;
+  late String _calculator;
 
   final GlobalKey targetButtonKey = GlobalKey();
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _titleController = TextEditingController();
     _selectedDate = DateTime.now();
     _selectedImage = 'assets/images/icon/calendarIcon.png';
+    _calculator = widget.calculator;
     initPrefs();
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _titleController.dispose();
     super.dispose();
   }
 
-  void initPrefs() async{
+  void initPrefs() async {
     prefs = await SharedPreferences.getInstance();
   }
 
-  Future<void> _selectDate() async{
+  void _toggleCalculator() {
+    setState(() {
+      if (_calculator == "0") {
+        _calculator = "1";
+      } else {
+        _calculator = "0";
+      }
+    });
+  }
+
+  Future<void> _selectDate() async {
     dpt.DatePicker.showDatePicker(
       context,
       showTitleActions: true,
@@ -58,7 +71,7 @@ class _DDayBottomSheetState extends State<DDayBottomSheet>{
       maxTime: DateTime(2100, 12, 31),
       currentTime: _selectedDate,
       locale: dpt.LocaleType.ko,
-      onConfirm: (date){
+      onConfirm: (date) {
         setState(() {
           _selectedDate = date;
         });
@@ -68,35 +81,38 @@ class _DDayBottomSheetState extends State<DDayBottomSheet>{
   }
 
   //save
-  void onSaveProssed(BuildContext context) async{
+  void onSaveProssed(BuildContext context) async {
     String title = _titleController.text.trim();
-    if(title.isNotEmpty){
+    if (title.isNotEmpty) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       List<String>? existingData = prefs.getStringList('daysInfo');
       List<DaysModel> dataList = [];
 
-      if(existingData != null){
-        dataList = existingData.map((jsonString) => DaysModel.fromJson(json.decode(jsonString))).toList();
+      if (existingData != null) {
+        dataList = existingData
+            .map((jsonString) => DaysModel.fromJson(json.decode(jsonString)))
+            .toList();
       }
 
       String iDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
 
       dataList.add(DaysModel(
-        uuid: Common.getUuid(), 
-        title: title, 
-        standardDate: iDate, 
-        calculation: widget.calculor,
+        uuid: Common.getUuid(),
+        title: title,
+        standardDate: iDate,
+        calculation: _calculator,
         icon: _selectedImage ?? '',
       ));
 
-      List<String> newDataList = dataList.map((day) => json.encode(day.daysToJson())).toList();
+      List<String> newDataList =
+          dataList.map((day) => json.encode(day.daysToJson())).toList();
       await prefs.setStringList('daysInfo', newDataList);
 
       Fluttertoast.showToast(msg: '저장되었습니다.');
 
       widget.onInsert();
       Navigator.pop(context);
-    }else{
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('제목을 입력하세요.'),
@@ -113,10 +129,14 @@ class _DDayBottomSheetState extends State<DDayBottomSheet>{
     return SingleChildScrollView(
       child: Container(
         height: MediaQuery.of(context).size.height,
+        color: Colors.white,
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16,),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 20,
+              ),
               color: DEFAULT_COLOR,
               child: Column(
                 children: [
@@ -124,21 +144,12 @@ class _DDayBottomSheetState extends State<DDayBottomSheet>{
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        onPressed: (){
+                        onPressed: () {
                           Navigator.of(context).pop();
-                        }, 
-                        icon: const Icon(Icons.close, color: Colors.white,),
-                      ),
-                      Container(
-                        alignment: Alignment.center,
-                        child: const Text(
-                          "D-DAY",
-                          style: TextStyle(
-                            fontFamily: "Lato",
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                        },
+                        icon: const Icon(
+                          Icons.close,
+                          color: Colors.white,
                         ),
                       ),
                       TextButton(
@@ -148,189 +159,205 @@ class _DDayBottomSheetState extends State<DDayBottomSheet>{
                           style: TextStyle(
                             color: Colors.white,
                             fontFamily: "Lato",
-                            fontSize: 15,
+                            fontSize: 17,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 100),
+                ],
+              ),
+            ),
+            Container(
+              color: DEFAULT_COLOR,
+              child: const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "D-DAY",
+                        style: TextStyle(
+                          fontFamily: "Lato",
+                          fontSize: 40,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 65,
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.all(5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      TextButton(
+                        onPressed: _toggleCalculator,
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: const BorderSide(
+                              color: DEFAULT_COLOR,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              _calculator == "0" ? "날짜수" : "디데이",
+                              style: const TextStyle(
+                                color: DEFAULT_COLOR,
+                                fontFamily: "Lato",
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            const Icon(
+                              Icons.change_circle,
+                              color: DEFAULT_COLOR,
+                              size: 14,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      const Text(
+                        "계산방법",
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                          fontFamily: "Lato",
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
             Container(
               padding: EdgeInsets.only(
-                left: 8,
-                right: 8,
-                top: 16,
+                left: 20,
+                right: 20,
+                top: 0,
                 bottom: bottomInsert,
               ),
               color: Colors.white,
               child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 4,
-                      child: TextField(
-                        controller: _titleController,
-                        decoration: const InputDecoration(
-                          labelText: '디데이 제목을 입력하세요.',
-                          labelStyle: TextStyle(
-                            fontFamily: "Lato",
-                            color: Colors.grey,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 4,
+                        child: TextField(
+                          controller: _titleController,
+                          decoration: const InputDecoration(
+                            labelText: '디데이 제목을 입력하세요.',
+                            labelStyle: TextStyle(
+                              fontFamily: "Lato",
+                              color: Colors.grey,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8.0),
-                    ElevatedButton(
-                      key: targetButtonKey,
-                      onPressed: () {
-                        final RenderBox buttonBox = targetButtonKey.currentContext?.findRenderObject() as RenderBox;
-                        final Offset buttonOffset = buttonBox.localToGlobal(Offset.zero);
-                        final Size buttonSize = buttonBox.size;
-                        showMenu(
-                          context: context,
-                          position: RelativeRect.fromLTRB(
-                            buttonOffset.dx,
-                            buttonOffset.dy + buttonSize.height,
-                            buttonOffset.dx + buttonSize.width,
-                            buttonOffset.dy + buttonSize.height + 10,
-                          ),
-                          items: buildPopupMenuItems(context),
-                        ).then((value){
-                          if(value != null){
-                            setState(() {
-                              _selectedImage = value;
-                            });
-                          }
-                        });
-                      }, child: Image.asset(
-                        _selectedImage ?? 'assets/images/icon/calendarIcon.png',
-                        width: 40,
-                        height: 40,
+                      const SizedBox(
+                        width: 10,
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20.0),
-                const Text('날짜'),
-                const SizedBox(width: 6.0),
-                TextButton(
-                    onPressed: _selectDate,
-                    child: Text(
-                        DateFormat('yyyy-MM-dd').format(_selectedDate),
-                        style: const TextStyle(fontSize: 18),
-                    ),
-                ),
-                const SizedBox(height: 20.0),
-                SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                        onPressed: () => onSaveProssed(context),
+                      ElevatedButton(
+                        key: targetButtonKey,
+                        onPressed: () {
+                          final RenderBox buttonBox =
+                              targetButtonKey.currentContext?.findRenderObject()
+                                  as RenderBox;
+                          final Offset buttonOffset =
+                              buttonBox.localToGlobal(Offset.zero);
+                          final Size buttonSize = buttonBox.size;
+                          showMenu(
+                            context: context,
+                            position: RelativeRect.fromLTRB(
+                              buttonOffset.dx,
+                              buttonOffset.dy + buttonSize.height,
+                              buttonOffset.dx + buttonSize.width,
+                              buttonOffset.dy + buttonSize.height + 10,
+                            ),
+                            items: buildPopupMenuItems(context),
+                          ).then((value) {
+                            if (value != null) {
+                              setState(() {
+                                _selectedImage = value;
+                              });
+                            }
+                          });
+                        },
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: DEFAULT_COLOR,
-                            foregroundColor: Colors.white,
+                          backgroundColor: Colors.white,
+                          elevation: 1,
+                          padding: const EdgeInsets.all(18),
                         ),
-                        child: const Text('저장'),
-                    ),
-                ),
-            ],
-          ),
+                        child: Image.asset(
+                          _selectedImage ??
+                              'assets/images/icon/calendarIcon.png',
+                          width: 40,
+                          height: 40,
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 0.1,
+                      ),
+                      const Icon(
+                        Icons.arrow_drop_down,
+                        color: DEFAULT_COLOR,
+                        size: 23,
+                      )
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "날짜",
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontFamily: "Lato",
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _selectDate,
+                        child: Text(
+                          DateFormat('yyyy-MM-dd').format(_selectedDate),
+                          style: const TextStyle(
+                            fontSize: 30,
+                            fontFamily: "Lato",
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
-
-    /*return SingleChildScrollView(
-      child: Container(
-        height: MediaQuery.of(context).size.height,
-        color: Colors.white,
-        child: Padding(
-          padding: EdgeInsets.only(
-            left: 8,
-            right: 8,
-            top: 8,
-            bottom: bottomInsert,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 4,
-                      child: TextField(
-                        controller: _titleController,
-                        decoration: const InputDecoration(
-                          labelText: '디데이 제목을 입력하세요.',
-                          labelStyle: TextStyle(
-                            fontFamily: "Lato",
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8.0),
-                    ElevatedButton(
-                      key: targetButtonKey,
-                      onPressed: () {
-                        final RenderBox buttonBox = targetButtonKey.currentContext?.findRenderObject() as RenderBox;
-                        final Offset buttonOffset = buttonBox.localToGlobal(Offset.zero);
-                        final Size buttonSize = buttonBox.size;
-                        showMenu(
-                          context: context,
-                          position: RelativeRect.fromLTRB(
-                            buttonOffset.dx,
-                            buttonOffset.dy + buttonSize.height,
-                            buttonOffset.dx + buttonSize.width,
-                            buttonOffset.dy + buttonSize.height + 10,
-                          ),
-                          items: buildPopupMenuItems(context),
-                        ).then((value){
-                          if(value != null){
-                            setState(() {
-                              _selectedImage = value;
-                            });
-                          }
-                        });
-                      }, child: Image.asset(
-                        _selectedImage ?? 'assets/images/icon/calendarIcon.png',
-                        width: 40,
-                        height: 40,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20.0),
-                const Text('날짜'),
-                const SizedBox(width: 6.0),
-                TextButton(
-                    onPressed: _selectDate,
-                    child: Text(
-                        DateFormat('yyyy-MM-dd').format(_selectedDate),
-                        style: const TextStyle(fontSize: 18),
-                    ),
-                ),
-                const SizedBox(height: 20.0),
-                SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                        onPressed: () => onSaveProssed(context),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: DEFAULT_COLOR,
-                            foregroundColor: Colors.white,
-                        ),
-                        child: const Text('저장'),
-                    ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );*/
   }
 }

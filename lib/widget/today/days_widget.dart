@@ -86,7 +86,7 @@ class _TheDaysCardState extends State<TheDaysCard>{
               context: context,
               isDismissible: true,
               isScrollControlled: true,
-              builder: (_) => DDayBottomSheet(calculor: value == "0" ? "0" : "1", onInsert: refreshDdayCard),
+              builder: (_) => DDayBottomSheet(calculator: value == "0" ? "0" : "1", onInsert: refreshDdayCard),
           );
         },
       ),
