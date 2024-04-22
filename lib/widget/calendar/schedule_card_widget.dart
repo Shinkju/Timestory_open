@@ -35,8 +35,8 @@ class ScheduleCardState extends State<ScheduleCard> {
     fetchMemos();
   }
 
-  void refreshData() {
-    setState(() {
+  void refreshData() async {
+   setState(() {
         memos = ScheduleService.getScheduleMemosById(widget.year, widget.month, widget.day);
         memos.then((value) {
             setState(() {
@@ -60,7 +60,6 @@ class ScheduleCardState extends State<ScheduleCard> {
     });
   }
 
-  
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<ScheduleMemoModel>>(
@@ -74,13 +73,19 @@ class ScheduleCardState extends State<ScheduleCard> {
                   selectedDate: widget.selectedDate, 
                   count: scheduleCardMemoCount,
                 ),
-                const SizedBox(height: 8,),
-                for(var memo in snapshot.data ?? [])
-                  Memo(
-                    memoInfo: memo,
-                    uuid: memo.uuid,
-                    onModify: refreshData,
+                Container(
+                  color: Colors.white,
+                  child: Column(
+                    children: [
+                      for(var memo in snapshot.data ?? [])
+                      Memo(
+                        memoInfo: memo,
+                        uuid: memo.uuid,
+                        onModify: refreshData,
+                      ),
+                    ],
                   ),
+                ),
               ],
             ),
           );
@@ -133,29 +138,43 @@ class _MemoState extends State<Memo> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.all(5.0),
+        margin: const EdgeInsets.all(6.0),
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10.0),
-          border: Border.all(color: DEFAULT_COLOR),
+          border: Border.all(color: DEFAULT_COLOR, width: 1.5),
           color: Colors.white,
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
-                  widget.memoInfo.content,
-                  style: const TextStyle(
-                    color: DEFAULT_COLOR,
-                    fontSize: 13.5,
-                    fontFamily: "Lato",
-                    fontWeight: FontWeight.bold,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.memoInfo.content,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontFamily: "Lato",
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                    Text(
+                      "${widget.memoInfo.sYear}-${widget.memoInfo.sMonth}-${widget.memoInfo.sDay} ~ ${widget.memoInfo.eYear}-${widget.memoInfo.eMonth}-${widget.memoInfo.eDay}",
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontFamily: "Lato",
+                        color: Colors.grey,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  ],
                 ),
               ),
               const Icon(

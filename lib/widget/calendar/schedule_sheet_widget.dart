@@ -92,14 +92,19 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet>{
         dataList = existingData.map((jsonString) => ScheduleMemoModel.fromJson(json.decode(jsonString))).toList();
       }
 
+      String sMonth = startDate.month.toString().padLeft(2, '0');
+      String sDay = startDate.day.toString().padLeft(2, '0');
+      String eMonth = endDate.month.toString().padLeft(2, '0');
+      String eDay = endDate.day.toString().padLeft(2, '0');
+
       //새로운 데이터 저장
       dataList.add(ScheduleMemoModel(
         sYear: startDate.year.toString(),
-        sMonth: startDate.month.toString(),
-        sDay: startDate.day.toString(),
+        sMonth: sMonth,
+        sDay: sDay,
         eYear: endDate.year.toString(),
-        eMonth: endDate.month.toString(),
-        eDay: endDate.day.toString(),
+        eMonth: eMonth,
+        eDay: eDay,
         uuid: Common.getUuid(),
         content: _content,
       ));

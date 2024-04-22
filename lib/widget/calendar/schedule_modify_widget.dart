@@ -33,8 +33,8 @@ class _ScheduleModifySheetState extends State<ScheduleModifySheet>{
   void initState(){
     super.initState();
     _contentController = TextEditingController(text: widget.memoInfo.content);
-    startDate = DateTime.parse('${widget.memoInfo.sYear}-${widget.memoInfo.sMonth}-${widget.memoInfo.sDay}');
-    endDate = DateTime.parse('${widget.memoInfo.eYear}-${widget.memoInfo.eMonth}-${widget.memoInfo.eDay}');
+    startDate = DateTime.parse('${widget.memoInfo.sYear}-${widget.memoInfo.sMonth.toString().padLeft(2, '0')}-${widget.memoInfo.sDay.toString().padLeft(2, '0')}');
+    endDate = DateTime.parse('${widget.memoInfo.eYear}-${widget.memoInfo.eMonth.toString().padLeft(2, '0')}-${widget.memoInfo.eDay.toString().padLeft(2, '0')}');
     initPrefs();
   }
 
@@ -93,14 +93,19 @@ class _ScheduleModifySheetState extends State<ScheduleModifySheet>{
         List<ScheduleMemoModel> dataList = jsonDataList.map((jsonData) => ScheduleMemoModel.fromJson(json.decode(jsonData))).toList();
         for(int i=0; i<dataList.length; i++){
           if(dataList[i].uuid == widget.memoInfo.uuid){
+            String sMonth = startDate.month.toString().padLeft(2, '0');
+            String sDay = startDate.day.toString().padLeft(2, '0');
+            String eMonth = endDate.month.toString().padLeft(2, '0');
+            String eDay = endDate.day.toString().padLeft(2, '0');
+
             dataList[i] = ScheduleMemoModel(
               sYear: startDate.year.toString(),
-              sMonth: startDate.month.toString(),
-              sDay: startDate.day.toString(),
+              sMonth: sMonth,
+              sDay: sDay,
               eYear: endDate.year.toString(),
-              eMonth: endDate.month.toString(), 
-              eDay: endDate.day.toString(),
-              uuid: widget.memoInfo.uuid, 
+              eMonth: eMonth, 
+              eDay: eDay,
+              uuid: widget.memoInfo.uuid,
               content: _content,
             );
             break;

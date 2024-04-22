@@ -18,6 +18,8 @@ class CalendarWidget extends StatefulWidget {
 class _CalendarWidgetState extends State<CalendarWidget> {
   Map<DateTime, List<Event>> events = {};
   bool check = false;
+  double _translateY = 0.0;
+  bool hasEvents = false;
 
   final GlobalKey<ScheduleCardState> scheduleCardKey =
       GlobalKey<ScheduleCardState>();
@@ -50,13 +52,21 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   void onDaySelected(DateTime selectedDate, DateTime focusedDate) {
     setState(() {
       this.selectedDate = selectedDate;
+
+      bool hasEvents = events.containsKey(DateTime(selectedDate.year, selectedDate.month, selectedDate.day));
+      _translateY = hasEvents ? -0.06 * MediaQuery.of(context).size.height : 0.0;
     });
   }
 
   //월 선택
   void onPageChanged(DateTime focusedDate) {
+    DateTime today = DateTime.now();
+    int day = 1;
     setState(() {
-      selectedDate = DateTime(focusedDate.year, focusedDate.month, 1);
+      if(focusedDate.year == today.year && focusedDate.month == today.month){
+        day = today.day;
+      }
+      selectedDate = DateTime(focusedDate.year, focusedDate.month, day);
     });
     updateEventMarkers();
   }
@@ -85,7 +95,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             lastDay: DateTime(3000, 1, 1), //마지막날
             focusedDay: selectedDate, //포거스날짜
             locale: 'ko_KR',
-            daysOfWeekHeight: 30,
+            daysOfWeekHeight: 55,
             onDaySelected: onDaySelected,
             selectedDayPredicate: (day) {
               return isSameDay(selectedDate, day);
@@ -148,6 +158,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 color: LIGHT_GREY_COLOR,
               ),
               markerSize: 7,
+              markersMaxCount: 5,
               markerDecoration: const BoxDecoration(
                 color: DEFAULT_COLOR,
                 shape: BoxShape.circle,
@@ -229,18 +240,19 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             ),
             onPageChanged: onPageChanged, //월 변경
           ),
-          const SizedBox(
-            height: 8,
-          ),
           Expanded(
-            child: SingleChildScrollView(
-              child: ScheduleCard(
-                key: check ? scheduleCardKey : UniqueKey(),
-                year: selectedDate.year.toString(),
-                month: selectedDate.month.toString(),
-                day: selectedDate.day.toString(),
-                selectedDate: selectedDate,
-                onUpdateMarker: updateEventMarkers,
+            child: Transform.translate(
+              offset: Offset(0, _translateY),
+              child: SingleChildScrollView(
+                clipBehavior: Clip.antiAlias,
+                child: ScheduleCard(
+                  key: check ? scheduleCardKey : UniqueKey(),
+                  year: selectedDate.year.toString(),
+                  month: selectedDate.month.toString(),
+                  day: selectedDate.day.toString(),
+                  selectedDate: selectedDate,
+                  onUpdateMarker: updateEventMarkers,
+                ),
               ),
             ),
           ),
@@ -271,7 +283,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
 class Event {
   String title;
-
   Event(this.title);
 }
 
@@ -283,18 +294,24 @@ Future<Map<DateTime, List<Event>>> loadScheduleFromPreferences() async {
   if (jsonDataList != null) {
     for (String jsonData in jsonDataList) {
       try {
-        Map<String, dynamic> data = json.decode(jsonData);
-        int year = int.parse(data['year'].toString());
-        int month = int.parse(data['month'].toString());
-        int day = int.parse(data['day'].toString());
+        Map<String, dynamic> scheduleMap = json.decode(jsonData);
+        final sYear = scheduleMap['sYear'];
+        final sMonth = scheduleMap['sMonth'];
+        final sDay = scheduleMap['sDay'];
+        final eYear = scheduleMap['eYear'];
+        final eMonth = scheduleMap['eMonth'];
+        final eDay = scheduleMap['eDay'];
+        DateTime startDate = DateTime.parse('$sYear-$sMonth-$sDay');
+        DateTime endDate = DateTime.parse('$eYear-$eMonth-$eDay');
+        String title = scheduleMap['title'].toString();
 
-        DateTime dateKey = DateTime(year, month, day);
-        String title = data['title'].toString();
-
-        if (!monthlyEvents.containsKey(dateKey)) {
-          monthlyEvents[dateKey] = [];
+        for(DateTime date = startDate; date.isBefore(endDate.add(Duration(days: 1))); date = date.add(Duration(days: 1))){
+          DateTime dateOnly = DateTime(date.year, date.month, date.day);
+          if (!monthlyEvents.containsKey(dateOnly)) {
+            monthlyEvents[dateOnly] = [];
+          }
+          monthlyEvents[dateOnly]!.add(Event(title));
         }
-        monthlyEvents[dateKey]!.add(Event(title));
       } catch (e) {
         print('ERROR!! : $e');
       }
