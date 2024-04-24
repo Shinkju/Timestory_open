@@ -38,7 +38,7 @@ class _TodayBannerState extends State<TodayBanner> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween, //양끝 배치
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               "${_selectedDate.year}년 ${_selectedDate.month}월 ${_selectedDate.day}일",

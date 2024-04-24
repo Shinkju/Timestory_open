@@ -1,9 +1,14 @@
 import 'dart:convert';
-
+import 'dart:ffi';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:timestory/model/schedule_memo_model.dart';
+import 'package:timestory/service/schedule_service.dart';
 import 'package:timestory/widget/calendar/schedule_card_widget.dart';
 import 'package:timestory/common/colors.dart';
 import 'package:timestory/widget/calendar/schedule_sheet_widget.dart';
@@ -16,10 +21,10 @@ class CalendarWidget extends StatefulWidget {
 }
 
 class _CalendarWidgetState extends State<CalendarWidget> {
-  Map<DateTime, List<Event>> events = {};
+  late List<Holiday> holidays;
+  late Map<DateTime, List<Event>>  holidayDateStyleMap;
+  Map<DateTime, List<Event>> userEvents = {};
   bool check = false;
-  double _translateY = 0.0;
-  bool hasEvents = false;
 
   final GlobalKey<ScheduleCardState> scheduleCardKey =
       GlobalKey<ScheduleCardState>();
@@ -35,9 +40,63 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     super.initState();
     initializeDateFormatting('ko_KR', null);
     updateEventMarkers();
+    holidayDateStyleMap = {};
+    _getHolidays().then((value){
+      holidays = value;
+      setHolidayStyles();
+    });
   }
 
-  //데이터로드
+  //marker 업데이트
+  void updateEventMarkers() async {
+    Map<DateTime, List<Event>> loadedEvents =
+        await ScheduleService.loadScheduleFromPreferences();
+    setState(() {
+      userEvents = loadedEvents;
+    });
+    check = false;
+
+    List<Holiday> newHolidays = await _getHolidays();
+    setState(() {
+      holidays = newHolidays;
+      setHolidayStyles();
+    });
+  }
+
+  //마커 로드데이터
+  List<Event> _getEventsForDay(DateTime day) {
+    DateTime dayWithoutTime = DateTime(day.year, day.month, day.day);
+    List<Event> holidayEvents = [];
+
+    if (holidayDateStyleMap != null && holidayDateStyleMap.containsKey(dayWithoutTime)) {
+      final holidayName = holidayDateStyleMap[dayWithoutTime];
+      holidayEvents.add(Event(holidayName.toString()));
+    }
+    return [...holidayEvents];
+  }
+
+  //휴일 목록
+  Future<List<Holiday>> _getHolidays() async{
+    return await ScheduleService.fetchHolidays(selectedDate.year.toString(), selectedDate.month.toString().padLeft(2, '0'),);
+  }
+
+  //휴일 스타일 매핑
+  void setHolidayStyles(){
+    holidayDateStyleMap = {};
+    for(var holiday in holidays){
+      String holidayLocdate = holiday.locdate;
+
+      DateTime holidayDate = DateTime(
+        int.parse(holidayLocdate.substring(0, 4)),
+        int.parse(holidayLocdate.substring(4, 6)),
+        int.parse(holidayLocdate.substring(6, 8)),
+      );
+
+      holidayDateStyleMap[holidayDate] = [Event(holiday.dateName)];
+    }
+  }
+
+  //일정 로드
   void refreshScheduleCard() async {
     check = true;
     if (check) {
@@ -48,14 +107,65 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     updateEventMarkers();
   }
 
+  //모달에 전달할 공휴일
+  Future<Map<DateTime, List<Event>>> _getModalHolidayEvents(DateTime selectedDate) async{
+    List<Holiday> holidayEvents = await _getHolidays();
+    Map<DateTime, List<Event>> combinedEvents = {};
+
+    for(var holiday in holidayEvents){
+      String holidayLocdate = holiday.locdate;
+
+      DateTime holidayDate = DateTime(
+        int.parse(holidayLocdate.substring(0, 4)),
+        int.parse(holidayLocdate.substring(4, 6)),
+        int.parse(holidayLocdate.substring(6, 8)),
+      );
+
+      if(!combinedEvents.containsKey(holidayDate)){
+        combinedEvents[holidayDate] = [Event(holiday.dateName)];
+      } else {
+        combinedEvents[holidayDate]!.add(Event(holiday.dateName));
+      }
+    }
+    return combinedEvents;
+  }
+
+  //일정 모달창
+  void _showEventPopup(BuildContext context, DateTime selectedDate) async{
+    Map<DateTime, List<Event>> combinedEvents = await _getModalHolidayEvents(selectedDate);
+    final List<Event>? selectedEvents = combinedEvents[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)];
+    final List<Event>? eventsForDate = userEvents[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)];
+
+    if(selectedEvents != null || eventsForDate != null){
+      showModalBottomSheet(
+        context: context,
+        isDismissible: true,
+        isScrollControlled: false,
+        builder: (_) => SingleChildScrollView(
+          child: Container(
+            height: 250,
+            color: Colors.white,
+            child: ScheduleCard(
+              key: GlobalKey<ScheduleCardState>(),
+              year: selectedDate.year.toString(),
+              month: selectedDate.month.toString(),
+              day: selectedDate.day.toString(),
+              selectedDate: selectedDate,
+              onUpdateMarker: updateEventMarkers,
+              selectedEvents: selectedEvents,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
   //일 선택
   void onDaySelected(DateTime selectedDate, DateTime focusedDate) {
     setState(() {
       this.selectedDate = selectedDate;
-
-      bool hasEvents = events.containsKey(DateTime(selectedDate.year, selectedDate.month, selectedDate.day));
-      _translateY = hasEvents ? -0.06 * MediaQuery.of(context).size.height : 0.0;
     });
+    _showEventPopup(context, selectedDate);
   }
 
   //월 선택
@@ -71,20 +181,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     updateEventMarkers();
   }
 
-  void updateEventMarkers() async {
-    Map<DateTime, List<Event>> loadedEvents =
-        await loadScheduleFromPreferences();
-    setState(() {
-      events = loadedEvents;
-    });
-    check = false;
-  }
-
-  List<Event> _getEventsForDay(DateTime day) {
-    DateTime dayWithoutTime = DateTime(day.year, day.month, day.day);
-    return events[dayWithoutTime] ?? [];
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,23 +192,26 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             focusedDay: selectedDate, //포거스날짜
             locale: 'ko_KR',
             daysOfWeekHeight: 55,
+            rowHeight: 60,
             onDaySelected: onDaySelected,
             selectedDayPredicate: (day) {
               return isSameDay(selectedDate, day);
             },
             //상단 스타일
             headerStyle: const HeaderStyle(
-              formatButtonVisible: false, //크기 옵션
+              formatButtonVisible: false,
               titleCentered: true, //정렬
               leftChevronVisible: true,
               rightChevronVisible: true,
               titleTextStyle: TextStyle(
                 fontFamily: "Lato",
-                fontSize: 22,
+                fontSize: 23,
                 color: DEFAULT_COLOR,
               ),
             ),
             calendarStyle: CalendarStyle(
+              cellMargin: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 3.0,),
+              cellAlignment : Alignment.center,
               outsideDaysVisible: false,
               defaultDecoration: BoxDecoration(
                 //기본 날짜
@@ -158,8 +257,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 color: LIGHT_GREY_COLOR,
               ),
               markerSize: 7,
-              markersMaxCount: 5,
-              markerDecoration: const BoxDecoration(
+              markersAutoAligned: true,
+              canMarkersOverflow: false,
+              markersAlignment: Alignment.bottomCenter,
+              markerMargin : const EdgeInsets.symmetric(horizontal: 0.4),
+              markerDecoration: const BoxDecoration( //마커
                 color: DEFAULT_COLOR,
                 shape: BoxShape.circle,
               ),
@@ -175,6 +277,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         '월',
                         style: TextStyle(
                           fontFamily: "Lato",
+                          fontSize: 18,
                         ),
                       ),
                     );
@@ -184,6 +287,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         '화',
                         style: TextStyle(
                           fontFamily: "Lato",
+                          fontSize: 18,
                         ),
                       ),
                     );
@@ -193,6 +297,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         '수',
                         style: TextStyle(
                           fontFamily: "Lato",
+                          fontSize: 18,
                         ),
                       ),
                     );
@@ -202,6 +307,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         '목',
                         style: TextStyle(
                           fontFamily: "Lato",
+                          fontSize: 18,
                         ),
                       ),
                     );
@@ -211,6 +317,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         '금',
                         style: TextStyle(
                           fontFamily: "Lato",
+                          fontSize: 18,
                         ),
                       ),
                     );
@@ -220,6 +327,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         '토',
                         style: TextStyle(
                           fontFamily: "Lato",
+                          fontSize: 18,
                         ),
                       ),
                     );
@@ -230,6 +338,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         style: TextStyle(
                           color: Colors.red,
                           fontFamily: "Lato",
+                          fontSize: 18,
                         ),
                       ),
                     );
@@ -237,24 +346,52 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                     return const SizedBox();
                 }
               },
+              markerBuilder: (BuildContext context, DateTime date, List<dynamic> holidays){
+                final children = <Widget>[];
+                final List<Event> eventsForDate = userEvents[DateTime(date.year, date.month, date.day)] ?? [];
+
+                if(holidays.isNotEmpty){ //공휴일
+                    children.add(
+                    Positioned(
+                      top: 5,
+                      child: Container(
+                        height: 2,
+                        width: MediaQuery.of(context).size.width / 8,
+                        margin: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 3.0,),
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.rectangle,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                
+                if(eventsForDate.isNotEmpty){ //이벤트
+                  for (var i = 0; i < eventsForDate.length; i++) {
+                    children.add(
+                      Positioned(
+                        top: 43,
+                        left: (i+1) * 8.0,
+                        child: Container(
+                          height: 7,
+                          width: 7,
+                          margin: const EdgeInsets.symmetric(vertical: 4.0,),
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: DEFAULT_COLOR,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                }
+                return children.isEmpty ? null : Stack(children:children);
+              },
             ),
             onPageChanged: onPageChanged, //월 변경
-          ),
-          Expanded(
-            child: Transform.translate(
-              offset: Offset(0, _translateY),
-              child: SingleChildScrollView(
-                clipBehavior: Clip.antiAlias,
-                child: ScheduleCard(
-                  key: check ? scheduleCardKey : UniqueKey(),
-                  year: selectedDate.year.toString(),
-                  month: selectedDate.month.toString(),
-                  day: selectedDate.day.toString(),
-                  selectedDate: selectedDate,
-                  onUpdateMarker: updateEventMarkers,
-                ),
-              ),
-            ),
           ),
         ],
       ),
@@ -279,43 +416,4 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       ),
     );
   }
-}
-
-class Event {
-  String title;
-  Event(this.title);
-}
-
-Future<Map<DateTime, List<Event>>> loadScheduleFromPreferences() async {
-  final prefs = await SharedPreferences.getInstance();
-  List<String>? jsonDataList = prefs.getStringList('scheduleInfo');
-  Map<DateTime, List<Event>> monthlyEvents = {};
-
-  if (jsonDataList != null) {
-    for (String jsonData in jsonDataList) {
-      try {
-        Map<String, dynamic> scheduleMap = json.decode(jsonData);
-        final sYear = scheduleMap['sYear'];
-        final sMonth = scheduleMap['sMonth'];
-        final sDay = scheduleMap['sDay'];
-        final eYear = scheduleMap['eYear'];
-        final eMonth = scheduleMap['eMonth'];
-        final eDay = scheduleMap['eDay'];
-        DateTime startDate = DateTime.parse('$sYear-$sMonth-$sDay');
-        DateTime endDate = DateTime.parse('$eYear-$eMonth-$eDay');
-        String title = scheduleMap['title'].toString();
-
-        for(DateTime date = startDate; date.isBefore(endDate.add(Duration(days: 1))); date = date.add(Duration(days: 1))){
-          DateTime dateOnly = DateTime(date.year, date.month, date.day);
-          if (!monthlyEvents.containsKey(dateOnly)) {
-            monthlyEvents[dateOnly] = [];
-          }
-          monthlyEvents[dateOnly]!.add(Event(title));
-        }
-      } catch (e) {
-        print('ERROR!! : $e');
-      }
-    }
-  }
-  return monthlyEvents;
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:timestory/model/schedule_memo_model.dart';
 import 'package:timestory/service/schedule_service.dart';
 import 'package:timestory/common/colors.dart';
@@ -11,6 +12,7 @@ class ScheduleCard extends StatefulWidget{
   final String year, month, day;
   final DateTime selectedDate;
   final VoidCallback onUpdateMarker;
+  final List<Event>? selectedEvents;
 
   const ScheduleCard({
     super.key,
@@ -19,6 +21,7 @@ class ScheduleCard extends StatefulWidget{
     required this.day,
     required this.selectedDate,
     required this.onUpdateMarker,
+    required this.selectedEvents,
   });
 
   @override
@@ -28,32 +31,43 @@ class ScheduleCard extends StatefulWidget{
 class ScheduleCardState extends State<ScheduleCard> {
   late Future<List<ScheduleMemoModel>> memos;
   int scheduleCardMemoCount = 0;
+  bool holidayCheck = false;
 
   @override
   void initState(){
     super.initState();
     fetchMemos();
+    if(widget.selectedEvents != null&& widget.selectedEvents![0].title != 'null'){
+      holidayCheck = true;
+    }
   }
-
   void refreshData() async {
-   setState(() {
+    if(mounted){
+      setState(() {
         memos = ScheduleService.getScheduleMemosById(widget.year, widget.month, widget.day);
         memos.then((value) {
             setState(() {
                 scheduleCardMemoCount = value.length;
+                if(widget.selectedEvents != null && widget.selectedEvents![0].title != 'null'){
+                  scheduleCardMemoCount += 1;
+                }
             });
         }).catchError((error) {
             print('refreshData: 에러 발생 - $error');
         });
-    });
-    widget.onUpdateMarker();//calendar marker
+      });
+      widget.onUpdateMarker();//calendar marker
+    }
   }
 
   void fetchMemos(){
     memos = ScheduleService.getScheduleMemosById(widget.year, widget.month, widget.day);
     memos.then((value){
       setState(() {
-        scheduleCardMemoCount = value.length;
+        if (holidayCheck){
+          scheduleCardMemoCount = 1;
+        }
+        scheduleCardMemoCount += value.length;
       });
     }).catchError((error){
       print(error);
@@ -65,29 +79,39 @@ class ScheduleCardState extends State<ScheduleCard> {
     return FutureBuilder<List<ScheduleMemoModel>>(
       future: memos,
       builder: (context, snapshot){
-        if(snapshot.hasData){
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                TodayBanner(
-                  selectedDate: widget.selectedDate, 
-                  count: scheduleCardMemoCount,
-                ),
-                Container(
-                  color: Colors.white,
-                  child: Column(
-                    children: [
-                      for(var memo in snapshot.data ?? [])
-                      Memo(
-                        memoInfo: memo,
-                        uuid: memo.uuid,
-                        onModify: refreshData,
-                      ),
-                    ],
+        if(snapshot.connectionState == ConnectionState.waiting){
+          return const CircularProgressIndicator();
+        }else if(snapshot.hasData){
+          return Column(
+            children: [
+              TodayBanner(
+                selectedDate: widget.selectedDate, 
+                count: scheduleCardMemoCount,
+              ),
+              const SizedBox(height: 8.0,),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Container(
+                    color: Colors.white,
+                    child: Column(
+                      children: [
+                        if(holidayCheck)
+                          HolidayMemo(
+                            events : widget.selectedEvents!,
+                            selectedDate: widget.selectedDate,
+                          ),
+                        for(var memo in snapshot.data ?? [])
+                          Memo(
+                            memoInfo: memo,
+                            uuid: memo.uuid,
+                            onModify: refreshData,
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         }
         return Container();
@@ -138,7 +162,12 @@ class _MemoState extends State<Memo> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.all(6.0),
+        margin: const EdgeInsets.only(
+          left: 8,
+          top: 4,
+          right: 8,
+          bottom: 4,
+        ),
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10.0),
@@ -146,7 +175,7 @@ class _MemoState extends State<Memo> {
           color: Colors.white,
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
+          padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 16.0,),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -168,7 +197,7 @@ class _MemoState extends State<Memo> {
                     Text(
                       "${widget.memoInfo.sYear}-${widget.memoInfo.sMonth}-${widget.memoInfo.sDay} ~ ${widget.memoInfo.eYear}-${widget.memoInfo.eMonth}-${widget.memoInfo.eDay}",
                       style: const TextStyle(
-                        fontSize: 10.5,
+                        fontSize: 10,
                         fontFamily: "Lato",
                         color: Colors.grey,
                         fontWeight: FontWeight.bold,
@@ -183,6 +212,76 @@ class _MemoState extends State<Memo> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+//공휴일 위젯
+class HolidayMemo extends StatefulWidget{
+  final List<Event> events;
+  final DateTime selectedDate;
+
+  const HolidayMemo({
+    super.key,
+    required this.events,
+    required this.selectedDate,
+  });
+  
+  @override
+  State<HolidayMemo> createState() => _HolidayMemoState();
+}
+
+class _HolidayMemoState extends State<HolidayMemo>{
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(
+        left: 8,
+        top: 4,
+        right: 8,
+        bottom: 4,
+      ),
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10.0),
+        border: Border.all(color: DEFAULT_COLOR, width: 1.5),
+        color: Colors.white,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 16.0,),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${widget.events[0].title}(공휴일)",
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 14,
+                      fontFamily: "Lato",
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
+                  Text(
+                    "${widget.selectedDate.year}-${widget.selectedDate.month.toString().padLeft(2,'0')}-${widget.selectedDate.day.toString().padLeft(2,'0')}",
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontFamily: "Lato",
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
