@@ -18,7 +18,6 @@ AOS / Flutter / Dart / 특일정보 API(공휴일)
 <ul>
   <li>하단 네비게이터로 캘린더 및 디데이위젯 페이지 이동</li>
   <li>개인정보처리방침 웹페이지에서 확인</li>
-  <li>애드몹 광고 노출</li>
 </ul>
 <br/>
 <h4>Calendar</h4>
