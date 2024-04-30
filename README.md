@@ -11,7 +11,7 @@
 2024/03/20 ~ 2024/04/25
 
 ## Skills
-AOS / IOS / Flutter / Dart / 특일정보 API(공휴일)
+AOS / Flutter / Dart / 특일정보 API(공휴일)
 
 ## Function
 <h4>공통</h4>
